@@ -2,7 +2,6 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Restaurant, Dish
 
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -13,11 +12,11 @@ class UserSerializer(serializers.ModelSerializer):
         return User.objects.create_user(**validated_data)
 
 class RestaurantSerializer(serializers.ModelSerializer):
-    #user = UserSerializer()
+    user = UserSerializer()
 
     class Meta:
         model = Restaurant
-        fields = ['id', 'name', 'description', 'address', 'phone_number', 'image', 'rating']
+        fields = ['id', 'user', 'name', 'description', 'address', 'phone_number', 'image', 'rating', 'opening_time', 'closing_time']
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')

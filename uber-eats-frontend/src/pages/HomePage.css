@@ -1,0 +1,53 @@
+.homepage-wrapper {
+  height: 100vh;
+  background-image: url('../assets/images/bg.jpg');  /* Correct path to your image */
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);  /* Adjust overlay color for visibility */
+}
+
+.homepage-content {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  color: white;
+}
+
+.homepage-btn {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  border-radius: 25px; /* Rounded button edges */
+  transition: background-color 0.3s ease; /* Smooth hover transition */
+}
+
+.homepage-btn:first-child {
+  background-color: #28a745;  /* Green for "Explore Restaurants" */
+  border: none;
+  color: white;
+}
+
+.homepage-btn:first-child:hover {
+  background-color: #218838;  /* Darker green on hover */
+}
+
+.homepage-btn:nth-child(2), .homepage-btn:nth-child(3) {
+  background-color: transparent;  /* Transparent background for Sign Up and Login */
+  border: 2px solid white;
+  color: white;
+}
+
+.homepage-btn:nth-child(2):hover, .homepage-btn:nth-child(3):hover {
+  background-color: white;
+  color: #000;  /* Black text on hover */
+  border: 2px solid #000;  /* Black border on hover */
+}

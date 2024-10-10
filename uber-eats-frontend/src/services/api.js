@@ -17,8 +17,6 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Remove the response interceptor for JWT refresh
-
 export const endpoints = {
   customerLogin: '/customers/login/',
   customerSignup: '/customers/signup/',
