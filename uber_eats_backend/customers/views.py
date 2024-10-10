@@ -115,7 +115,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 class FavoriteRestaurantViewSet(viewsets.ModelViewSet):
     queryset = FavoriteRestaurant.objects.all()
     serializer_class = FavoriteRestaurantSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # Make sure the user is authenticated
 
     def get_queryset(self):
         return FavoriteRestaurant.objects.filter(customer=self.request.user.customer)

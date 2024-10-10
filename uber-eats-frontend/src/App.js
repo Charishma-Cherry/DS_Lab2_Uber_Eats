@@ -13,6 +13,8 @@ import Cart from './pages/Cart';
 import OrderHistory from './pages/OrderHistory';
 import OrderPlacement from './components/OrderPlacement';
 import ProtectedRoute from './components/ProtectedRoute';
+import FavoriteRestaurants from './components/FavoriteRestaurants';
+
 
 function App() {
   return (
@@ -25,6 +27,10 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/restaurants/:id" element={<RestaurantDetails />} />
+            <Route path="/favorites" element={<FavoriteRestaurants />} /> {/* Add this route */}
+            <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+            <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+            <Route path="/order-history" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
             <Route 
               path="/profile" 
               element={

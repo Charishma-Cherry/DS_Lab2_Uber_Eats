@@ -1,9 +1,9 @@
-// src/components/RestaurantCard.js
 import React from 'react';
-import { Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
+import { Card, CardContent, CardMedia, Typography, Button, IconButton } from '@mui/material';
+import { Favorite, FavoriteBorder } from '@mui/icons-material';  // Import icons
 import { useNavigate } from 'react-router-dom';
 
-const RestaurantCard = ({ restaurant }) => {
+const RestaurantCard = ({ restaurant, isFavorite, toggleFavorite }) => {
   const navigate = useNavigate();
 
   const handleViewMenu = () => {
@@ -25,7 +25,13 @@ const RestaurantCard = ({ restaurant }) => {
         <Typography variant="body2" color="text.secondary">
           {restaurant.description}
         </Typography>
+        
         <Button onClick={handleViewMenu}>View Menu</Button>
+
+        {/* Toggle Favorite Button */}
+        <IconButton onClick={() => toggleFavorite(restaurant.id)} aria-label="add to favorites">
+          {isFavorite ? <Favorite color="secondary" /> : <FavoriteBorder />}
+        </IconButton>
       </CardContent>
     </Card>
   );

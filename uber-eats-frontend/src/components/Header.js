@@ -15,6 +15,7 @@ function Header() {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ml-auto">
             <Nav.Link as={Link} to="/">Restaurants</Nav.Link>
+            <Nav.Link as={Link} to="/favorites">Favorites</Nav.Link> 
             {user ? (
               <>
                 <Nav.Link as={Link} to="/cart">Cart</Nav.Link>
