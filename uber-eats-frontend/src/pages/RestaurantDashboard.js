@@ -41,7 +41,14 @@ const RestaurantDashboard = () => {
       const response = await api.get(`/restaurants/orders/?status=${filterStatus}`);
       setOrders(response.data);
     } catch (err) {
+<<<<<<< HEAD
       console.error('Error fetching orders:', err);
+=======
+      setError('Failed to fetch orders');
+      console.error('Errors fetching orders:', err);
+    } finally {
+      setLoading(false);
+>>>>>>> 4b0a2cb06362faac9c2e1668910bbb3b8de6ac77
     }
   };
 
