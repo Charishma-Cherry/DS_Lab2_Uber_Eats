@@ -1,78 +1,44 @@
-// src/pages/RestaurantMenu.js
-
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import api, { endpoints } from '../services/api';
-import { AuthContext } from '../context/AuthContext';
-import DishDetailsModal from '../components/DishDetailsModal';
+import { CartContext } from '../context/CartContext';
+import { Button, Card, Row, Col } from 'react-bootstrap'; // Use Bootstrap components
+import api from '../services/api';
 
 const RestaurantMenu = () => {
-  const [restaurant, setRestaurant] = useState(null);
   const [menu, setMenu] = useState([]);
-  const [selectedDish, setSelectedDish] = useState(null);
   const { id } = useParams();
-  const { user } = useContext(AuthContext);
+  const { addToCart } = useContext(CartContext);
 
   useEffect(() => {
-    fetchRestaurantAndMenu();
+    const fetchMenu = async () => {
+      const response = await api.get(`/restaurants/${id}/dishes/`);
+      setMenu(response.data);
+    };
+
+    fetchMenu();
   }, [id]);
 
-  const fetchRestaurantAndMenu = async () => {
-    try {
-      const restaurantResponse = await api.get(`/restaurants/${id}/`);
-      setRestaurant(restaurantResponse.data);
-      const menuResponse = await api.get(`/restaurants/${id}/dishes/`);
-      setMenu(menuResponse.data);
-    } catch (error) {
-      console.error('Error fetching restaurant and menu:', error);
-    }
+  const handleAddToCart = (dish) => {
+    addToCart(dish);
+    alert(`${dish.name} added to cart!`);
   };
-
-  const addToCart = async (dishId) => {
-    if (!user) {
-      alert('Please log in to add items to your cart');
-      return;
-    }
-
-    try {
-      await api.post('/cart-items/add_to_cart/', { dish_id: dishId, quantity: 1 });
-      alert('Item added to cart successfully!');
-    } catch (error) {
-      console.error('Error adding item to cart:', error);
-      alert('Failed to add item to cart. Please try again.');
-    }
-  };
-
-  if (!restaurant) return <div>Loading...</div>;
 
   return (
-    <div className="restaurant-menu">
-      <div className="restaurant-details">
-        <h1>{restaurant.name}</h1>
-        <p>{restaurant.description}</p>
-        <p>Location: {restaurant.location}</p>
-        <p>Contact: {restaurant.contact_info}</p>
-        <p>Opening Hours: {restaurant.opening_time} - {restaurant.closing_time}</p>
-      </div>
-      <h2>Menu</h2>
-      <div className="menu-items">
+    <div>
+      <h2 className="text-center">Restaurant Menu</h2>
+      <Row>
         {menu.map((dish) => (
-          <div key={dish.id} className="menu-item">
-            <h3>{dish.name}</h3>
-            <p>{dish.description}</p>
-            <p>Price: ${dish.price}</p>
-            <button onClick={() => setSelectedDish(dish)}>View Details</button>
-            <button onClick={() => addToCart(dish.id)}>Add to Cart</button>
-          </div>
+          <Col key={dish.id} md={4} className="mb-3">
+            <Card>
+              <Card.Body>
+                <Card.Title>{dish.name}</Card.Title>
+                <Card.Text>Price: ${dish.price}</Card.Text>
+                <Button variant="primary" onClick={() => handleAddToCart(dish)}>Add to Cart</Button>
+              </Card.Body>
+            </Card>
+          </Col>
         ))}
-      </div>
-      {selectedDish && (
-        <DishDetailsModal
-          dish={selectedDish}
-          onClose={() => setSelectedDish(null)}
-          onAddToCart={() => addToCart(selectedDish.id)}
-        />
-      )}
+      </Row>
     </div>
   );
 };

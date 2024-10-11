@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, IconButton } from '@mui/material';
-import { Favorite, FavoriteBorder } from '@mui/icons-material';  // Import icons
+import { Favorite, FavoriteBorder } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
 const RestaurantCard = ({ restaurant, isFavorite, toggleFavorite }) => {

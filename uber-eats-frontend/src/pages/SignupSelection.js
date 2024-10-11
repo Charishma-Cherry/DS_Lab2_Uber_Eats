@@ -1,37 +1,37 @@
-// src/pages/SignupSelection.js
 import React from 'react';
-import { Button, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { Button, Container } from 'react-bootstrap';  // Import Bootstrap components
+import './SignupSelection.css';  // Your custom CSS
 
-function SignupSelection() {
-  const navigate = useNavigate();
+const SignupSelection = () => {
+  const navigate = useNavigate();  // Initialize navigate
 
   return (
     <Container className="d-flex flex-column align-items-center justify-content-center mt-5">
-      <h2>Hey! Are you new here? </h2>
+      <h2>Hey! Are you new here?</h2>
       <Button
         variant="primary"
         className="mt-3"
-        onClick={() => navigate('/signup')}
+        onClick={() => navigate('/signup')}  // Navigate to User Signup
       >
         User Signup
       </Button>
       <Button
         variant="secondary"
         className="mt-3"
-        onClick={() => navigate('/restaurant/signup')}
+        onClick={() => navigate('/restaurant/signup')}  // Navigate to Restaurant Signup
       >
         Restaurant Signup
       </Button>
-      <Button 
-        variant="secondary" 
-        className="mt-3" 
-        onClick={() => navigate('/')}
+      <Button
+        variant="secondary"
+        className="mt-3"
+        onClick={() => navigate('/')}  // Navigate back to Home
       >
         Back to Home
       </Button>
     </Container>
   );
-}
+};
 
 export default SignupSelection;

@@ -1,12 +1,14 @@
+// src/pages/RestaurantList.js
+
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Alert } from 'react-bootstrap';
 import api, { endpoints } from '../services/api';
-import RestaurantCard from '../components/RestaurantCard';
+import RestaurantCard from '../components/RestaurantCard'; // Ensure correct import
 import LoadingSpinner from '../components/LoadingSpinner';
 
 function RestaurantList() {
   const [restaurants, setRestaurants] = useState([]);
-  const [favorites, setFavorites] = useState([]);  // State to store favorite restaurants
+  const [favorites, setFavorites] = useState([]); // State to store favorite restaurants
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -62,7 +64,7 @@ function RestaurantList() {
           <RestaurantCard 
             restaurant={restaurant} 
             isFavorite={isFavorite(restaurant.id)}  // Pass isFavorite status
-            toggleFavorite={toggleFavorite}  // Pass toggle function
+            toggleFavorite={toggleFavorite}  // Pass toggle function here
           />
         </Col>
       ))}

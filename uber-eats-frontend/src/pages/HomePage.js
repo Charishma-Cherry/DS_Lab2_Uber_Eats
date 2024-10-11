@@ -1,45 +1,41 @@
-// src/pages/HomePage.js
 import React from 'react';
-import { Container, Button } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import './HomePage.css';  // Link to custom CSS
+import { useNavigate } from 'react-router-dom';  // Import useNavigate hook for navigation
+import './HomePage.css';  // Link to your existing CSS file
 
 const HomePage = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate();  // Initialize navigate function
 
   return (
     <div className="homepage-wrapper">
       <div className="overlay">
-        <Container className="text-center homepage-content">
+        <div className="text-center homepage-content">
           <h1 className="display-3">Welcome to Uber Eats</h1>
           <p className="lead">Your favorite food delivered fast at your door.</p>
-          <Button 
-            variant="success" 
-            size="lg" 
+          
+          {/* Explore Restaurants Button */}
+          <button 
             className="homepage-btn" 
             onClick={() => navigate('/restaurants')}
           >
             Explore Restaurants
-          </Button>
-          <Button 
-            variant="outline-light" 
-            size="lg" 
-            className="homepage-btn" 
-            onClick={() => navigate('/signup-selection')}  // Navigates to signup selection
+          </button>
+          
+          {/* Sign Up Button to navigate to Signup Selection */}
+          <button 
+            className="homepage-btn"
+            onClick={() => navigate('/signup-selection')}  // Navigate to signup selection page
           >
             Sign Up
-          </Button>
+          </button>
 
-          {/* New Button for "Already a User" */}
-          <Button 
-            variant="outline-light" 
-            size="lg" 
-            className="homepage-btn" 
+          {/* Already a User? Login Button */}
+          <button 
+            className="homepage-btn"
             onClick={() => navigate('/login')}  // Link to login page
           >
             Already a User? Login
-          </Button>
-        </Container>
+          </button>
+        </div>
       </div>
     </div>
   );

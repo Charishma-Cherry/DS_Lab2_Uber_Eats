@@ -1,0 +1,21 @@
+/* src/pages/RestaurantMenu.css */
+
+.restaurant-details h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
+  
+  .restaurant-details p {
+    font-size: 1.2rem;
+  }
+  
+  .card:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .card-img-top {
+    height: 150px;
+    object-fit: cover;
+  }
+  
