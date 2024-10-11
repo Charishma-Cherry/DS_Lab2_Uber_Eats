@@ -42,7 +42,7 @@ const RestaurantDashboard = () => {
       setOrders(response.data);
     } catch (err) {
       setError('Failed to fetch orders');
-      console.error('Error fetching orders:', err);
+      console.error('Errors fetching orders:', err);
     } finally {
       setLoading(false);
     }
