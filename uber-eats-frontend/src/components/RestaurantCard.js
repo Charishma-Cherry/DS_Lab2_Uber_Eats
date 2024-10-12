@@ -26,7 +26,13 @@ const RestaurantCard = ({ restaurant , isFavorite, toggleFavorite}) => {
         <Typography variant="body2" color="text.secondary">
           {restaurant.description}
         </Typography>
+        
         <Button onClick={handleViewMenu}>View Menu</Button>
+
+        {/* Toggle Favorite Button */}
+        <IconButton onClick={() => toggleFavorite(restaurant.id)} aria-label="add to favorites">
+          {isFavorite ? <Favorite color="secondary" /> : <FavoriteBorder />}
+        </IconButton>
       </CardContent>
     </Card>
   );

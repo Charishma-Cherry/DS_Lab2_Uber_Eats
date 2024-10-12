@@ -2,11 +2,14 @@ import React, { useState, useContext } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import './Login.css'; // Link to custom CSS
+import api, { endpoints } from '../services/api';  
+
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(''); // Set error message
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 

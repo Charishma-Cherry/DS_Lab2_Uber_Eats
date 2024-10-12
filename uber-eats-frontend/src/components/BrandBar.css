@@ -1,0 +1,17 @@
+.brand-bar {
+    background-color: black;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .brand-bar h1 {
+    color: white;
+    font-size: 36px;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  .brand-bar span {
+    color: #5AC45A;
+  }
+  

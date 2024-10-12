@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { List, ListItem, ListItemText, IconButton, CircularProgress, Typography } from '@mui/material';
-import { Favorite } from '@mui/icons-material';
+import { Favorite } from '@mui/icons-material'; // Removed FavoriteBorder as it wasn't used
 import api, { endpoints } from '../services/api';
 
 const FavoriteRestaurants = () => {
-  // State for storing favorite restaurants and loading status
   const [favorites, setFavorites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -30,11 +29,14 @@ const FavoriteRestaurants = () => {
   const toggleFavorite = async (restaurantId) => {
     try {
       const isFavorite = favorites.some(fav => fav.restaurant.id === restaurantId);
+      
+      // Correct the endpoint and make the POST request
       if (isFavorite) {
         await api.post(endpoints.toggleFavorite, { restaurant_id: restaurantId });
       } else {
         await api.post(endpoints.toggleFavorite, { restaurant_id: restaurantId });
       }
+      
       // Refresh the favorites list after toggling
       fetchFavorites();
     } catch (error) {

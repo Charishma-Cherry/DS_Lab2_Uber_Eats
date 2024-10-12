@@ -17,10 +17,12 @@ function Header({ showNavLinks = true }){ //Add prop to control nav link visibil
             <Nav.Link as={Link} to="/">Restaurants</Nav.Link>
             {user ? (
               <>
-                <Nav.Link as={Link} to="/cart">Cart</Nav.Link>
+                <Nav.Link as={Link} to="/favorites">Favorites</Nav.Link>
+                <Nav.Link as={Link} to="/cart">Cart <Badge pill bg="primary">{cartCount}</Badge> </Nav.Link>
                 <Nav.Link as={Link} to="/order-history">Order History</Nav.Link>
                 <Nav.Link as={Link} to="/userprofile">Welcome, {user.username}</Nav.Link>
                 <Nav.Link onClick={logout}>Logout</Nav.Link>
+                <Nav.Link as={Link} to="/restaurants">Restaurants</Nav.Link>
               </>
             ) : (
               <>
