@@ -4,12 +4,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-from .models import Customer, Order, FavoriteRestaurant, CartItem, DeliveryAddress
+from .models import Customer, Order, FavoriteRestaurant, CartItem, DeliveryAddress, Dish
 from .serializers import CustomerSerializer, OrderSerializer, FavoriteRestaurantSerializer, CartItemSerializer, DeliveryAddressSerializer
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.parsers import MultiPartParser, FormParser
 
 logger = logging.getLogger(__name__)
 
@@ -55,18 +56,31 @@ class CustomerViewSet(viewsets.ModelViewSet):
         username = request.data.get('username')
         password = request.data.get('password')
         email = request.data.get('email')
+        if not username:
+            return Response({'error': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST)
 
+        if not password:
+            return Response({'error': 'Password is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
         if User.objects.filter(username=username).exists():
             return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.create_user(username=username, password=password, email=email)
-        customer = Customer.objects.create(user=user)
-        token, _ = Token.objects.get_or_create(user=user)
-        serializer = self.get_serializer(customer)
-        return Response({
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.create_user(username=username, password=password, email=email)
+            customer = Customer.objects.update_or_create(user=user)
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response({
             'token': token.key,
-            'user': serializer.data
+            'user_id': user.id,
         }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'])
     @permission_classes([IsAuthenticated])
@@ -79,6 +93,32 @@ class CustomerViewSet(viewsets.ModelViewSet):
     def logout(self, request):
         request.auth.delete()
         return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
+    
+    #UserProfile
+    @action(detail=False, methods=['get'])
+    @permission_classes([IsAuthenticated])
+    def profile(self, request):
+        logger.info(f"Fetching profile for user: {request.user.username}")
+        try:
+            serializer = self.get_serializer(request.user.customer)
+            logger.info(f"Profile fetched successfully for user: {request.user.username}")
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error(f"Error fetching profile for user {request.user.username}: {str(e)}")
+            return Response({'error': 'Failed to fetch profile'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    ##Update Profile
+    @action(detail=False, methods=['patch'], parser_classes=[MultiPartParser, FormParser])
+    @permission_classes([IsAuthenticated])
+    def update_profile(self, request):
+        customer = request.user.customer
+        logger.info(request.data)
+        logger.info(customer)
+        serializer = self.get_serializer(customer, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -90,24 +130,31 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def place_order(self, request):
-        customer = request.user.customer
-        cart_items = CartItem.objects.filter(customer=customer)
+        customer = Customer.objects.get(user=request.user)
+        restaurant_id = request.data.get('restaurant_id')
+        logger.info(restaurant_id)
+
+        cart_items = CartItem.objects.filter(customer=customer).select_related('dish')
+        rest_cart_items = cart_items.filter(dish__restaurant=restaurant_id)
+        logger.info(rest_cart_items)
         
-        if not cart_items:
+        if not rest_cart_items:
             return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
 
-        total_price = sum(item.dish.price * item.quantity for item in cart_items)
+        total_price = sum(item.dish.price * item.quantity for item in rest_cart_items)
         order = Order.objects.create(
             customer=customer,
-            restaurant=cart_items[0].dish.restaurant,
+            restaurant=rest_cart_items[0].dish.restaurant,
             total_price=total_price,
             delivery_address=request.data.get('delivery_address')
         )
 
         # Add order items and clear cart
-        for item in cart_items:
-            order.orderitem_set.create(dish=item.dish, quantity=item.quantity, price=item.dish.price)
-            item.delete()
+        # for item in cart_items:
+        #     order.create(dish=item.dish, quantity=item.quantity, price=item.dish.price)
+        #     item.delete()
+
+        rest_cart_items.update(order=order.id, state='placed')
 
         serializer = self.get_serializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -139,26 +186,34 @@ class CartItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return CartItem.objects.filter(customer=self.request.user.customer)
+        return CartItem.objects.filter(customer=self.request.user.customer, state='placing')
 
     @action(detail=False, methods=['post'])
     def add_to_cart(self, request):
         customer = request.user.customer
-        dish_id = request.data.get('dish_id')
+        dish_id = int(request.data.get('dish_id'))
+
+        dish = Dish.objects.get(id=dish_id)
         quantity = request.data.get('quantity', 1)
-
-        cart_item, created = CartItem.objects.get_or_create(
+        cart_item = CartItem.objects.create(
             customer=customer,
-            dish_id=dish_id,
-            defaults={'quantity': quantity}
+            dish=dish,
+            quantity=quantity
         )
-
-        if not created:
-            cart_item.quantity += quantity
-            cart_item.save()
 
         serializer = self.get_serializer(cart_item)
         return Response(serializer.data)
+    
+
+#Order Details to view in order history
+    @action(detail=False, methods=['get'])
+    def order_details(self, request):
+        order_id = request.data.get('order_id')
+        logger.info(request.data)
+        order_items = CartItem.objects.filter(order__id=order_id)
+        serializer = self.get_serializer(order_items)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
