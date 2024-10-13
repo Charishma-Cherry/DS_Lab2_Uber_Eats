@@ -135,7 +135,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         logger.info(restaurant_id)
 
         cart_items = CartItem.objects.filter(customer=customer).select_related('dish')
-        rest_cart_items = cart_items.filter(dish__restaurant=restaurant_id)
+        rest_cart_items = cart_items.filter(dish__restaurant=restaurant_id,state ='placing')
         logger.info(rest_cart_items)
         
         if not rest_cart_items:
