@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from restaurants.models import Restaurant, Dish  # Add this line
+from restaurants.models import Restaurant, Dish
 
 class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -13,6 +13,8 @@ class Customer(models.Model):
     country = models.CharField(max_length=100, blank=True)
     nickname = models.CharField(max_length=100, blank=True)
     phone_number = models.CharField(max_length=20, blank=True)
+    name = models.CharField(max_length=100, blank=True)
+    email = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
         return self.user.username
@@ -65,6 +67,10 @@ class CartItem(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     dish = models.ForeignKey(Dish, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    STATE = [ ('placing', "Placing"), ('placed', 'Placed')]
+    state = models.CharField(max_length=20, choices=STATE, default='placing')
+    order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True)
+
 
 
 

@@ -5,7 +5,6 @@ import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import api, { endpoints } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 
-
 function RestaurantDetails() {
   const [restaurant, setRestaurant] = useState(null);
   const [dishes, setDishes] = useState([]);

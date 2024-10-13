@@ -1,11 +1,12 @@
 // src/components/OrderPlacement.js
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Form, Button, Alert } from 'react-bootstrap';
 import api, { endpoints } from '../services/api';
 
 const OrderPlacement = () => {
   const [cartItems, setCartItems] = useState([]);
+  const [restId, setRestId] = useState(null);
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [newAddress, setNewAddress] = useState({
@@ -19,21 +20,36 @@ const OrderPlacement = () => {
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  
 
   useEffect(() => {
     fetchCartItems();
     fetchAddresses();
   }, []);
 
-  const fetchCartItems = async () => {
-    try {
-      const response = await api.get(endpoints.cartItems);
-      setCartItems(response.data);
-    } catch (error) {
-      console.error('Error fetching cart items:', error);
-      setError('Failed to load cart items. Please try again.');
+  // const fetchCartItems = async () => {
+  //   try {
+  //     const response = await api.get(endpoints.cartItems);
+  //     setCartItems(response.data);
+  //   } catch (error) {
+  //     console.error('Error fetching cart items:', error);
+  //     setError('Failed to load cart items. Please try again.');
+  //   }
+  // };
+
+  const fetchCartItems = () => {
+    const cart_data = location.state;
+    if(!cart_data){
+      navigate('/cart');
     }
-  };
+    if (cart_data.rest_id && cart_data.rest_cart) {
+      setCartItems(cart_data.rest_cart);
+      setRestId(cart_data.rest_id);
+    } else{
+      navigate('/cart');
+    }
+  }
 
   const fetchAddresses = async () => {
     try {
@@ -102,11 +118,12 @@ const OrderPlacement = () => {
 
     try {
       const response = await api.post(endpoints.placeOrder, {
-        delivery_address_id: selectedAddressId
+        delivery_address_id: selectedAddressId,
+        restaurant_id: restId
       });
       console.log('Order placed:', response.data);
       alert('Order placed successfully!');
-      navigate('/order-history');
+     // navigate('/order-history');
     } catch (error) {
       console.error('Error placing order:', error);
       setError('Failed to place order. Please try again.');

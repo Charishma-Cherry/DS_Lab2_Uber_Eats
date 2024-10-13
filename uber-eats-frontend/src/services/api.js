@@ -1,5 +1,4 @@
-import axios from 'axios'; // '../' goes up one directory
-
+import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/';
 
@@ -18,13 +17,19 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Remove the response interceptor for JWT refresh
+
 export const endpoints = {
   customerLogin: '/customers/login/',
   customerSignup: '/customers/signup/',
-  customerProfile: '/customers/me/',
+  //customerProfile: '/customers/me/',
+  customerProfile: '/customers/profile/',
+  updateProfile: '/customers/update_profile/',
   restaurants: '/restaurants/',
-  dishes: '/dishes/',
+  // dishes: '/dishes/',
   orders: '/orders/',
+ // order_details: '/orders/',
+  order_details: '/cart-items/order_details/',
   placeOrder: '/orders/place_order/',
   cartItems: '/cart-items/',
   addToCart: '/cart-items/add_to_cart/',
@@ -32,5 +37,15 @@ export const endpoints = {
   toggleFavorite: '/favorite-restaurants/toggle_favorite/',
   deliveryAddresses: '/delivery-addresses/',
 };
+
+//to handle profile updates
+export const updateProfile = (data) => {
+  return api.patch(endpoints.updateProfile, data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
 
 export default api;

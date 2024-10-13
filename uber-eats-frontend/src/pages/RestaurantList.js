@@ -1,18 +1,17 @@
 // src/pages/RestaurantList.js
-
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Alert } from 'react-bootstrap';
 import api, { endpoints } from '../services/api';
-import RestaurantCard from '../components/RestaurantCard'; // Ensure correct import
+import RestaurantCard from '../components/RestaurantCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 function RestaurantList() {
-  const [restaurants, setRestaurants] = useState([]);
-  const [favorites, setFavorites] = useState([]); // State to store favorite restaurants
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+    const [restaurants, setRestaurants] = useState([]);
+    const [favorites, setFavorites] = useState([]); // State to store favorite restaurants
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-  // Fetch restaurants and favorites when component mounts
+      // Fetch restaurants and favorites when component mounts
   useEffect(() => {
     fetchRestaurants();
     fetchFavorites();  // Fetch favorites separately
@@ -39,7 +38,7 @@ function RestaurantList() {
     }
   };
 
-  // Function to toggle favorite status
+// Function to toggle favorite status
   const toggleFavorite = async (restaurantId) => {
     try {
       await api.post(endpoints.toggleFavorite, { restaurant_id: restaurantId });  // Toggle favorite
@@ -56,7 +55,6 @@ function RestaurantList() {
 
   if (loading) return <LoadingSpinner />;
   if (error) return <Alert variant="danger">{error}</Alert>;
-
   return (
     <Row>
       {restaurants.map(restaurant => (

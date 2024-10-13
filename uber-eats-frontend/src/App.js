@@ -6,14 +6,18 @@ import Header from './components/Header';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import RestaurantList from './pages/RestaurantList';
-import RestaurantMenu from './pages/RestaurantMenu';
+import RestaurantDetails from './pages/RestaurantDetails';
+import UserProfile from './pages/UserProfile';
+import Cart from './pages/Cart';
+import OrderHistory from './pages/OrderHistory';
+import OrderPlacement from './components/OrderPlacement';
+import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import SignupSelection from './pages/SignupSelection'; // Import SignupSelection
 import RestaurantSignup from './pages/RestaurantSignup'; // Import RestaurantSignup
-import Cart from './pages/Cart'; // Import Cart
-import Checkout from './pages/Checkout'; // Import Checkout
-import OrderHistory from './pages/OrderHistory'; // Import OrderHistory
-import { CartProvider } from './context/CartContext';  // Import CartProvider
+//import Checkout from './pages/Checkout'; // Import Checkout
+//import RestaurantMenu from './pages/RestaurantMenu';
+
 
 
 function AppContent() {
@@ -30,10 +34,43 @@ function AppContent() {
           <Route path="/signup-selection" element={<SignupSelection />} />
           <Route path="/restaurant/signup" element={<RestaurantSignup />} />
           <Route path="/restaurants" element={<RestaurantList />} />
-          <Route path="/restaurants/:id" element={<RestaurantMenu />} />
-          <Route path="/cart" element={<Cart />} />
+          {/* <Route path="/restaurants/:id" element={<RestaurantMenu />} /> */}
+          {/* <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
-          <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/order-history" element={<OrderHistory />} /> */}
+          <Route path="/restaurants/:id" element={<RestaurantDetails />} />
+          <Route 
+              path="/userprofile" 
+              element={
+              <ProtectedRoute>
+                  <UserProfile />
+              </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/cart" 
+              element={
+                <ProtectedRoute>
+                  <Cart />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/order-history" 
+              element={
+                <ProtectedRoute>
+                  <OrderHistory />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/order-placement" 
+              element={
+                <ProtectedRoute>
+                  <OrderPlacement />
+                </ProtectedRoute>
+              } 
+            />
         </Routes>
       </Container>
     </>
@@ -43,11 +80,11 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <CartProvider>
+      {/* <CartProvider> */}
         <Router>
           <AppContent />
         </Router>
-      </CartProvider>
+      {/* </CartProvider> */}
     </AuthProvider>
   );
 }

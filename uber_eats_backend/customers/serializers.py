@@ -48,12 +48,6 @@ class FavoriteRestaurantSerializer(serializers.ModelSerializer):
         model = FavoriteRestaurant
         fields = '__all__'
 
-class CartItemSerializer(serializers.ModelSerializer):
-    dish = DishSerializer(read_only=True)
-
-    class Meta:
-        model = CartItem
-        fields = '__all__'
 
 class DeliveryAddressSerializer(serializers.ModelSerializer):
     class Meta:
@@ -61,10 +55,20 @@ class DeliveryAddressSerializer(serializers.ModelSerializer):
         fields = ['id', 'address_line1', 'city', 'state', 'postal_code', 'country','is_default']
         read_only_fields = ['id']
 
+
 class OrderSerializer(serializers.ModelSerializer):
     delivery_address = DeliveryAddressSerializer(read_only=True)
     class Meta:
         model = Order
+        fields = '__all__'
+
+class CartItemSerializer(serializers.ModelSerializer):
+    customer = CustomerSerializer(read_only=True)
+    dish = DishSerializer(read_only=True)
+    order = OrderSerializer(read_only=True)
+
+    class Meta:
+        model = CartItem
         fields = '__all__'
 
 class RestaurantSerializer(serializers.ModelSerializer):

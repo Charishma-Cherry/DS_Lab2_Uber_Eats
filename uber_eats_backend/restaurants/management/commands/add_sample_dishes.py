@@ -17,24 +17,24 @@ class Command(BaseCommand):
         dish_data = [
             {
                 'name': 'Margherita Pizza',
-                'ingredients': 'Tomato sauce, mozzarella, basil',
+                #'ingredients': 'Tomato sauce, mozzarella, basil',
                 'price': 10.99,
                 'description': 'Classic Italian pizza',
-                'category': 'main_course',
+                #'category': 'main_course',
             },
             {
                 'name': 'Caesar Salad',
-                'ingredients': 'Romaine lettuce, croutons, parmesan cheese, Caesar dressing',
+                #'ingredients': 'Romaine lettuce, croutons, parmesan cheese, Caesar dressing',
                 'price': 8.99,
                 'description': 'Fresh and crispy salad',
-                'category': 'salad',
+                #'category': 'salad',
             },
             {
                 'name': 'Chocolate Brownie',
-                'ingredients': 'Chocolate, flour, sugar, eggs',
+                #'ingredients': 'Chocolate, flour, sugar, eggs',
                 'price': 5.99,
                 'description': 'Rich and fudgy dessert',
-                'category': 'dessert',
+                #'category': 'dessert',
             },
         ]
 

@@ -1,39 +1,58 @@
 // src/context/AuthContext.js
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
+import api, { endpoints } from '../services/api';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (token && storedUser) {
+      api.defaults.headers.common['Authorization'] = `Token ${token}`;
+      setUser(storedUser);
+    }
+    setLoading(false);
+  }, []);
+
+  const fetchUser = async () => {
+    try {
+      const response = await api.get(endpoints.customerProfile);
+      setUser(response.data);
+      localStorage.setItem('user', JSON.stringify(response.data));
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      logout();
+    }
+  };
 
   const login = async (username, password) => {
-    setUser({ username });
+    try {
+      const response = await api.post(endpoints.customerLogin, { username, password });
+      const { token, user } = response.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      api.defaults.headers.common['Authorization'] = `Token ${token}`;
+      setUser(user);
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
   };
 
   const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    delete api.defaults.headers.common['Authorization'];
     setUser(null);
-    setCartItems([]); // Clear the cart on logout
-  };
-
-  const addToCart = (dish) => {
-    setCartItems((prevItems) => {
-      const itemExists = prevItems.find(item => item.id === dish.id);
-      if (itemExists) {
-        return prevItems.map(item =>
-          item.id === dish.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      }
-      return [...prevItems, { ...dish, quantity: 1 }];
-    });
-  };
-
-  const removeFromCart = (id) => {
-    setCartItems((prevItems) => prevItems.filter(item => item.id !== id));
   };
 
   return (
-    <AuthContext.Provider value={{ user, cartItems, setCartItems, login, logout, addToCart, removeFromCart }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, fetchUser }}>
       {children}
     </AuthContext.Provider>
   );
