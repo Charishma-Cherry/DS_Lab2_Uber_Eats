@@ -15,6 +15,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import SignupSelection from './pages/SignupSelection'; // Import SignupSelection
 import RestaurantSignup from './pages/RestaurantSignup'; // Import RestaurantSignup
+import FavoriteRestaurants from './pages/FavoriteRestaurants';
 //import Checkout from './pages/Checkout'; // Import Checkout
 //import RestaurantMenu from './pages/RestaurantMenu';
 
@@ -39,6 +40,7 @@ function AppContent() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-history" element={<OrderHistory />} /> */}
           <Route path="/restaurants/:id" element={<RestaurantDetails />} />
+          <Route path="/favorites" element={<FavoriteRestaurants />} />
           <Route 
               path="/userprofile" 
               element={

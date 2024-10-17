@@ -28,8 +28,6 @@ def create_customer(sender, instance, created, **kwargs):
 def save_customer(sender, instance, **kwargs):
     instance.customer.save()
 
-# ... (rest of the models)
-
 class DeliveryAddress(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     address_line1 = models.CharField(max_length=255)

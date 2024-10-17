@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 from .models import Customer, Order, FavoriteRestaurant, CartItem, DeliveryAddress, Dish
 from .serializers import CustomerSerializer, OrderSerializer, FavoriteRestaurantSerializer, CartItemSerializer, DeliveryAddressSerializer
 from django.contrib.auth.models import User
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -162,7 +162,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 class FavoriteRestaurantViewSet(viewsets.ModelViewSet):
     queryset = FavoriteRestaurant.objects.all()
     serializer_class = FavoriteRestaurantSerializer
-    permission_classes = [IsAuthenticated]  # Make sure the user is authenticated
+    permission_classes = [AllowAny]  # Make sure the user is authenticated
 
     def get_queryset(self):
         return FavoriteRestaurant.objects.filter(customer=self.request.user.customer)
@@ -179,6 +179,7 @@ class FavoriteRestaurantViewSet(viewsets.ModelViewSet):
             favorite.delete()
             return Response({'status': 'removed'})
         return Response({'status': 'added'})
+      
 
 class CartItemViewSet(viewsets.ModelViewSet):
     queryset = CartItem.objects.all()

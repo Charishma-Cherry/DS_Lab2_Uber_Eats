@@ -17,6 +17,7 @@ const FavoriteRestaurants = () => {
     setIsLoading(true);
     try {
       const response = await api.get(endpoints.favoriteRestaurants); // Update endpoint to match backend
+      console.log(response.data)
       setFavorites(response.data);
     } catch (error) {
       console.error('Error fetching favorites:', error);
