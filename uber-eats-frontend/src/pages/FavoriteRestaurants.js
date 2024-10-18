@@ -1,11 +1,10 @@
-// src/pages/RestaurantList.js
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Alert } from 'react-bootstrap';
 import api, { endpoints } from '../services/api';
 import RestaurantCard from '../components/RestaurantCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 
-function RestaurantList() {
+function FavoriteRestaurants() {
     const [restaurants, setRestaurants] = useState([]);
     const [favorites, setFavorites] = useState([]); // State to store favorite restaurants
     const [loading, setLoading] = useState(true);
@@ -13,13 +12,13 @@ function RestaurantList() {
 
       // Fetch restaurants and favorites when component mounts
   useEffect(() => {
-    fetchRestaurants();
+    fetchFavRestaurants();
     fetchFavorites();  // Fetch favorites separately
   }, []);
 
-  const fetchRestaurants = async () => {
+  const fetchFavRestaurants = async () => {
     try {
-      const response = await api.get(endpoints.restaurants);  // Get list of restaurants
+      const response = await api.get(endpoints.favoriteRestaurants);  // Get list of fav restaurants
       setRestaurants(response.data);
     } catch (err) {
       setError('Failed to fetch restaurants. Please try again later.');
@@ -32,7 +31,7 @@ function RestaurantList() {
   const fetchFavorites = async () => {
     try {
       const response = await api.get(endpoints.favoriteRestaurants);
-      console.log("Fetching fav restaurants")  // Get list of favorite restaurants
+      console.log("Fetching fav restaurants" + JSON.stringify(response.data))  // Get list of favorite restaurants
       setFavorites(response.data);
     } catch (err) {
       console.error('Failed to fetch favorite restaurants.', err);
@@ -41,7 +40,7 @@ function RestaurantList() {
 
 // Function to toggle favorite status
   const toggleFavorite = async (restaurantId) => {
-    console.log("Toggle fav hit");
+    console.log("Toggling fav in rest card")
     try {
       await api.post(endpoints.toggleFavorite, { restaurant_id: restaurantId });  // Toggle favorite
       fetchFavorites();  // Re-fetch favorites after toggling
@@ -59,7 +58,7 @@ function RestaurantList() {
   if (error) return <Alert variant="danger">{error}</Alert>;
   return (
     <Row>
-      {restaurants.map(restaurant => (
+      {favorites.flatMap(fav => fav.restaurant).map(restaurant => (
         <Col key={restaurant.id} md={4} className="mb-4">
           <RestaurantCard 
             restaurant={restaurant} 
@@ -72,4 +71,4 @@ function RestaurantList() {
   );
 }
 
-export default RestaurantList;
+export default FavoriteRestaurants;
