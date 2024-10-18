@@ -158,6 +158,17 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['get'])
+    def getOrderDetail(self, request):
+        order_id = request.GET.get('orderId')
+        order = Order.objects.filter(id=order_id)
+        logger.info(order.values())
+
+        if(order) :
+            serializer = OrderSerializer(order, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response([], status=status.HTTP_200_OK)
 
 class FavoriteRestaurantViewSet(viewsets.ModelViewSet):
     queryset = FavoriteRestaurant.objects.all()

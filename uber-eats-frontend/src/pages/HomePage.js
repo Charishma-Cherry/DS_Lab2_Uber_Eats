@@ -20,20 +20,29 @@ const HomePage = () => {
             Explore Restaurants
           </button>
           
-          {/* Sign Up Button to navigate to Signup Selection */}
+
+
           <button 
             className="homepage-btn"
-            onClick={() => navigate('/signup-selection')}  // Navigate to signup selection page
+            onClick={() => navigate('/restaurant/login')}  // Link to login page
           >
-            Sign Up
+            Restaurant Login
           </button>
 
           {/* Already a User? Login Button */}
           <button 
             className="homepage-btn"
-            onClick={() => navigate('/login')}  // Link to login page
+            onClick={() => navigate('/customer/login')}  // Link to login page
           >
-            Already a User? Login
+            Customer Login
+          </button>
+
+                    {/* Sign Up Button to navigate to Signup Selection */}
+                    <button 
+            className="homepage-btn"
+            onClick={() => navigate('/signup-selection')}  // Navigate to signup selection page
+          >
+            Sign Up
           </button>
         </div>
       </div>
