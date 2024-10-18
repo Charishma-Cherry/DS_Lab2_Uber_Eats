@@ -15,16 +15,12 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CustomerSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    favorite_restaurants = serializers.SerializerMethodField()
 
     class Meta:
         model = Customer
         fields = '__all__'
 
-    def get_favorite_restaurants(self, obj):
-        favorites = FavoriteRestaurant.objects.filter(customer=obj)
-        return RestaurantSerializer(favorites.values_list('restaurant', flat=True), many=True).data
-
+   
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         user = UserSerializer().create(user_data)
@@ -38,7 +34,6 @@ class CustomerSerializer(serializers.ModelSerializer):
             if user_serializer.is_valid():
                 user_serializer.save()
         return super().update(instance, validated_data)
-
 
 
 class FavoriteRestaurantSerializer(serializers.ModelSerializer):
@@ -58,6 +53,8 @@ class DeliveryAddressSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     delivery_address = DeliveryAddressSerializer(read_only=True)
+    total_price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    customer = CustomerSerializer(read_only=True)
     class Meta:
         model = Order
         fields = '__all__'

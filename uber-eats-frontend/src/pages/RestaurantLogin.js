@@ -10,15 +10,15 @@ function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(''); // Set error message
-  const { login } = useContext(AuthContext);
+  const { loginRestaurant } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    const success = await login(username, password);
+    const success = await loginRestaurant(username, password);
     if (success) {
-      navigate('/');
+      navigate(`/restaurant/home/${success}`);
     } else {
       setError('Invalid username or password');
     }
@@ -26,7 +26,7 @@ function Login() {
 
   return (
     <Form onSubmit={handleSubmit}>
-      <h2>Login</h2>
+      <h2>Restaurant Login</h2>
       {error && <Alert variant="danger">{error}</Alert>}
       <Form.Group className="mb-3">
         <Form.Label>Username</Form.Label>

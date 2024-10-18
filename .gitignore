@@ -1,3 +1,5 @@
 /node_modules
 
 /uber-eats-frontend/node_modules
+/uber_eats_backend/lib/*
+*.pyc
