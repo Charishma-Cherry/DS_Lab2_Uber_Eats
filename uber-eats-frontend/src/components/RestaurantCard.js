@@ -3,8 +3,9 @@ import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, IconButton } from '@mui/material';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';  // Import icons
 import { useNavigate } from 'react-router-dom';
+import './RestaurantCard.css'; // Import the CSS file
 
-const RestaurantCard = ({ restaurant , isFavorite, toggleFavorite}) => {
+const RestaurantCard = ({ restaurant, isFavorite, toggleFavorite }) => {
   const navigate = useNavigate();
 
   const handleViewMenu = () => {
@@ -12,7 +13,7 @@ const RestaurantCard = ({ restaurant , isFavorite, toggleFavorite}) => {
   };
 
   return (
-    <Card>
+    <Card className="restaurant-card">
       <CardMedia
         component="img"
         height="140"
@@ -20,19 +21,23 @@ const RestaurantCard = ({ restaurant , isFavorite, toggleFavorite}) => {
         alt={restaurant.name}
       />
       <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
+        <Typography gutterBottom variant="h5" component="div" className="restaurant-name">
           {restaurant.name}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {restaurant.description}
         </Typography>
         
-        <Button onClick={handleViewMenu}>View Menu</Button>
+        <div className="card-actions">
+          <Button variant="contained" color="primary" onClick={handleViewMenu}>
+            View Menu
+          </Button>
 
-        {/* Toggle Favorite Button */}
-        <IconButton onClick={() => toggleFavorite(restaurant.id)} aria-label="add to favorites">
-          {isFavorite ? <Favorite color="secondary" /> : <FavoriteBorder />}
-        </IconButton>
+          {/* Toggle Favorite Button */}
+          <IconButton onClick={() => toggleFavorite(restaurant.id)} aria-label="add to favorites">
+            {isFavorite ? <Favorite color="secondary" /> : <FavoriteBorder />}
+          </IconButton>
+        </div>
       </CardContent>
     </Card>
   );

@@ -1,25 +1,30 @@
 // src/pages/RestaurantList.js
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Alert } from 'react-bootstrap';
+import { Row, Col, Alert, Carousel } from 'react-bootstrap';
 import api, { endpoints } from '../services/api';
 import RestaurantCard from '../components/RestaurantCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 
-function RestaurantList() {
-    const [restaurants, setRestaurants] = useState([]);
-    const [favorites, setFavorites] = useState([]); // State to store favorite restaurants
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+// Import your ad images
+import ad1 from '../assets/images/ad1.png';
+import ad2 from '../assets/images/ad2.png';
+import ad3 from '../assets/images/ad3.png';
+import './RestaurantList.css'; // Import the CSS file
 
-      // Fetch restaurants and favorites when component mounts
+function RestaurantList() {
+  const [restaurants, setRestaurants] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
   useEffect(() => {
     fetchRestaurants();
-    fetchFavorites();  // Fetch favorites separately
+    fetchFavorites();
   }, []);
 
   const fetchRestaurants = async () => {
     try {
-      const response = await api.get(endpoints.restaurants);  // Get list of restaurants
+      const response = await api.get(endpoints.restaurants);
       setRestaurants(response.data);
     } catch (err) {
       setError('Failed to fetch restaurants. Please try again later.');
@@ -28,47 +33,70 @@ function RestaurantList() {
     }
   };
 
-  // Function to fetch the list of favorite restaurants
   const fetchFavorites = async () => {
     try {
       const response = await api.get(endpoints.favoriteRestaurants);
-      console.log("Fetching fav restaurants")  // Get list of favorite restaurants
       setFavorites(response.data);
     } catch (err) {
       console.error('Failed to fetch favorite restaurants.', err);
     }
   };
 
-// Function to toggle favorite status
   const toggleFavorite = async (restaurantId) => {
-    console.log("Toggle fav hit");
     try {
-      await api.post(endpoints.toggleFavorite, { restaurant_id: restaurantId });  // Toggle favorite
-      fetchFavorites();  // Re-fetch favorites after toggling
+      await api.post(endpoints.toggleFavorite, { restaurant_id: restaurantId });
+      fetchFavorites();
     } catch (error) {
       console.error('Error toggling favorite:', error);
     }
   };
 
-  // Helper function to check if a restaurant is favorited
   const isFavorite = (restaurantId) => {
-    return favorites.some(fav => fav.restaurant.id === restaurantId);  // Check if in favorites
+    return favorites.some(fav => fav.restaurant.id === restaurantId);
   };
 
   if (loading) return <LoadingSpinner />;
   if (error) return <Alert variant="danger">{error}</Alert>;
+
   return (
-    <Row>
-      {restaurants.map(restaurant => (
-        <Col key={restaurant.id} md={4} className="mb-4">
-          <RestaurantCard 
-            restaurant={restaurant} 
-            isFavorite={isFavorite(restaurant.id)}  // Pass isFavorite status
-            toggleFavorite={toggleFavorite}  // Pass toggle function here
-          />
-        </Col>
-      ))}
-    </Row>
+    <div className="restaurant-list">
+      <Carousel className="ad-carousel">
+        <Carousel.Item>
+          <img className="d-block w-100" src={ad1} alt="First slide" />
+          <Carousel.Caption>
+            <h3>Welcome to Uber Eats</h3>
+            <p>Delicious meals delivered to your door.</p>
+          </Carousel.Caption>
+        </Carousel.Item>
+        <Carousel.Item>
+          <img className="d-block w-100" src={ad2} alt="Second slide" />
+          <Carousel.Caption>
+            <h3>Special Offers</h3>
+            <p>Check out our exclusive offers!</p>
+          </Carousel.Caption>
+        </Carousel.Item>
+        <Carousel.Item>
+          <img className="d-block w-100" src={ad3} alt="Third slide" />
+          <Carousel.Caption>
+            <h3>New Restaurants</h3>
+            <p>Discover new flavors today!</p>
+          </Carousel.Caption>
+        </Carousel.Item>
+      </Carousel>
+
+      <h2 className="restaurants-title">Available Restaurants</h2>
+      <Row>
+        {restaurants.map(restaurant => (
+          <Col key={restaurant.id} md={4} className="mb-4">
+            <RestaurantCard 
+              restaurant={restaurant} 
+              isFavorite={isFavorite(restaurant.id)}  
+              toggleFavorite={toggleFavorite}  
+            />
+          </Col>
+        ))}
+      </Row>
+    </div>
   );
 }
 
