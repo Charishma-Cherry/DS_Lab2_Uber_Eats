@@ -1,8 +1,8 @@
-// src/components/OrderPlacement.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button, Alert, Card } from 'react-bootstrap';
 import api, { endpoints } from '../services/api';
+import './OrderPlacement.css'; // Import the CSS for custom styles
 
 const OrderPlacement = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -21,35 +21,25 @@ const OrderPlacement = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-  
 
   useEffect(() => {
     fetchCartItems();
     fetchAddresses();
   }, []);
 
-  // const fetchCartItems = async () => {
-  //   try {
-  //     const response = await api.get(endpoints.cartItems);
-  //     setCartItems(response.data);
-  //   } catch (error) {
-  //     console.error('Error fetching cart items:', error);
-  //     setError('Failed to load cart items. Please try again.');
-  //   }
-  // };
-
   const fetchCartItems = () => {
     const cart_data = location.state;
-    if(!cart_data){
+    if (!cart_data) {
       navigate('/cart');
     }
     if (cart_data.rest_id && cart_data.rest_cart) {
       setCartItems(cart_data.rest_cart);
       setRestId(cart_data.rest_id);
-    } else{
+      console.log('Cart Items:', cart_data.rest_cart);
+    } else {
       navigate('/cart');
     }
-  }
+  };
 
   const fetchAddresses = async () => {
     try {
@@ -97,14 +87,8 @@ const OrderPlacement = () => {
     } catch (error) {
       console.error('Error adding new address:', error);
       if (error.response) {
-        console.error('Response data:', error.response.data);
-        console.error('Response status:', error.response.status);
         setError(`Failed to add new address: ${JSON.stringify(error.response.data)}`);
-      } else if (error.request) {
-        console.error('No response received:', error.request);
-        setError('Failed to add new address: No response received from server');
       } else {
-        console.error('Error message:', error.message);
         setError(`Failed to add new address: ${error.message}`);
       }
     }
@@ -123,108 +107,116 @@ const OrderPlacement = () => {
       });
       console.log('Order placed:', response.data);
       alert('Order placed successfully!');
-     // navigate('/order-history');
+      // navigate('/order-history');
     } catch (error) {
       console.error('Error placing order:', error);
       setError('Failed to place order. Please try again.');
     }
   };
 
+  // Calculate total price
+  const totalPrice = cartItems.reduce((total, item) => total + (item.dish.price * item.quantity), 0);
+
   return (
-    <div>
-      <h2>Order Placement</h2>
+    <div className="order-placement-container">
+      <h2 className="text-center mb-4">Order Placement</h2>
       {error && <Alert variant="danger">{error}</Alert>}
-      <div>
-        <h3>Cart Items</h3>
-        {cartItems.map(item => (
-          <div key={item.id}>
-            <p>{item.dish.name} - Quantity: {item.quantity}</p>
-          </div>
-        ))}
-      </div>
-      <div>
-        <h3>Select Delivery Address</h3>
-        {addresses.map(address => (
-          <Form.Check
-            key={address.id}
-            type="radio"
-            id={`address-${address.id}`}
-            name="address"
-            value={address.id}
-            checked={selectedAddressId === address.id}
-            onChange={handleAddressChange}
-            label={`${address.address_line1}, ${address.city}, ${address.state}, ${address.postal_code}, ${address.country}`}
-          />
-        ))}
-        <Button onClick={() => setShowNewAddressForm(!showNewAddressForm)}>
-          {showNewAddressForm ? 'Cancel' : 'Add New Address'}
-        </Button>
-        {showNewAddressForm && (
-          <Form onSubmit={handleAddNewAddress}>
-            <Form.Group>
-              <Form.Control
-                type="text"
-                name="address_line1"
-                value={newAddress.address_line1}
-                onChange={handleNewAddressChange}
-                placeholder="Address Line 1"
-                required
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Control
-                type="text"
-                name="city"
-                value={newAddress.city}
-                onChange={handleNewAddressChange}
-                placeholder="City"
-                required
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Control
-                type="text"
-                name="state"
-                value={newAddress.state}
-                onChange={handleNewAddressChange}
-                placeholder="State"
-                required
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Control
-                type="text"
-                name="postal_code"
-                value={newAddress.postal_code}
-                onChange={handleNewAddressChange}
-                placeholder="Postal Code"
-                required
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Control
-                type="text"
-                name="country"
-                value={newAddress.country}
-                onChange={handleNewAddressChange}
-                placeholder="Country"
-                required
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Check
-              type="checkbox"
-              label="Set as default address"
-              name="is_default"
-              checked={newAddress.is_default}
-              onChange={(e) => setNewAddress({ ...newAddress, is_default: e.target.checked })}
-              />
-             </Form.Group>
-            <Button type="submit">Add Address</Button>
-          </Form>
-        )}
-      </div>
-      <Button onClick={handlePlaceOrder}>Place Order</Button>
+      <Card className="mb-4">
+        <Card.Header as="h5">Cart Items</Card.Header>
+        <Card.Body>
+          {cartItems.map(item => (
+            <div key={item.id} className="cart-item">
+              <p>{item.dish.name} - Quantity: {item.quantity}</p>
+            </div>
+          ))}
+          <h5 className="mt-3">Total Price: ${totalPrice.toFixed(2)}</h5> {/* Display total price */}
+        </Card.Body>
+      </Card>
+      <Card className="mb-4">
+        <Card.Header as="h5">Select Delivery Address</Card.Header>
+        <Card.Body>
+          {addresses.map(address => (
+            <Form.Check
+              key={address.id}
+              type="radio"
+              id={`address-${address.id}`}
+              name="address"
+              value={address.id}
+              checked={selectedAddressId === address.id}
+              onChange={handleAddressChange}
+              label={`${address.address_line1}, ${address.city}, ${address.state}, ${address.postal_code}, ${address.country}`}
+            />
+          ))}
+          <Button variant="link" onClick={() => setShowNewAddressForm(!showNewAddressForm)}>
+            {showNewAddressForm ? 'Cancel' : 'Add New Address'}
+          </Button>
+          {showNewAddressForm && (
+            <Form onSubmit={handleAddNewAddress} className="mt-3">
+              <Form.Group controlId="address_line1">
+                <Form.Control
+                  type="text"
+                  name="address_line1"
+                  value={newAddress.address_line1}
+                  onChange={handleNewAddressChange}
+                  placeholder="Address Line 1"
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="city">
+                <Form.Control
+                  type="text"
+                  name="city"
+                  value={newAddress.city}
+                  onChange={handleNewAddressChange}
+                  placeholder="City"
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="state">
+                <Form.Control
+                  type="text"
+                  name="state"
+                  value={newAddress.state}
+                  onChange={handleNewAddressChange}
+                  placeholder="State"
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="postal_code">
+                <Form.Control
+                  type="text"
+                  name="postal_code"
+                  value={newAddress.postal_code}
+                  onChange={handleNewAddressChange}
+                  placeholder="Postal Code"
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="country">
+                <Form.Control
+                  type="text"
+                  name="country"
+                  value={newAddress.country}
+                  onChange={handleNewAddressChange}
+                  placeholder="Country"
+                  required
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Check
+                  type="checkbox"
+                  label="Set as default address"
+                  name="is_default"
+                  checked={newAddress.is_default}
+                  onChange={(e) => setNewAddress({ ...newAddress, is_default: e.target.checked })}
+                />
+              </Form.Group>
+              <Button type="submit" variant="primary">Add Address</Button>
+            </Form>
+          )}
+        </Card.Body>
+      </Card>
+      <Button onClick={handlePlaceOrder} variant="success">Place Order</Button>
     </div>
   );
 };

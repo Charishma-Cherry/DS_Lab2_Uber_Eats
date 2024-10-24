@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { List, ListItem, ListItemText, IconButton, CircularProgress, Typography } from '@mui/material';
-import { Favorite } from '@mui/icons-material'; // Removed FavoriteBorder as it wasn't used
+import { Favorite } from '@mui/icons-material';
 import api, { endpoints } from '../services/api';
+import './FavoriteRestaurants.css'; // Import your CSS file
 
 const FavoriteRestaurants = () => {
   const [favorites, setFavorites] = useState([]);
@@ -17,7 +18,7 @@ const FavoriteRestaurants = () => {
     setIsLoading(true);
     try {
       const response = await api.get(endpoints.favoriteRestaurants); // Update endpoint to match backend
-      console.log(response.data)
+      console.log(response.data);
       setFavorites(response.data);
     } catch (error) {
       console.error('Error fetching favorites:', error);
@@ -30,16 +31,8 @@ const FavoriteRestaurants = () => {
   const toggleFavorite = async (restaurantId) => {
     try {
       const isFavorite = favorites.some(fav => fav.restaurant.id === restaurantId);
-      
-      // Correct the endpoint and make the POST request
-      if (isFavorite) {
-        await api.post(endpoints.toggleFavorite, { restaurant_id: restaurantId });
-      } else {
-        await api.post(endpoints.toggleFavorite, { restaurant_id: restaurantId });
-      }
-      
-      // Refresh the favorites list after toggling
-      fetchFavorites();
+      await api.post(endpoints.toggleFavorite, { restaurant_id: restaurantId });
+      fetchFavorites(); // Refresh the favorites list after toggling
     } catch (error) {
       console.error('Error toggling favorite:', error);
     }
@@ -57,16 +50,19 @@ const FavoriteRestaurants = () => {
 
   // Render list of favorite restaurants
   return (
-    <List>
-      {favorites.map((favorite) => (
-        <ListItem key={favorite.id}>
-          <ListItemText primary={favorite.restaurant.name} />
-          <IconButton onClick={() => toggleFavorite(favorite.restaurant.id)}>
-            <Favorite color="secondary" />
-          </IconButton>
-        </ListItem>
-      ))}
-    </List>
+    <div className="favorite-restaurants-wrapper">
+      <Typography variant="h5" gutterBottom>Your Favorite Restaurants</Typography>
+      <div className="favorite-restaurants-list">
+        {favorites.map((favorite) => (
+          <div className="favorite-restaurants-item" key={favorite.id}>
+            <ListItemText primary={favorite.restaurant.name} />
+            <IconButton onClick={() => toggleFavorite(favorite.restaurant.id)}>
+              <Favorite className="favorite-restaurants-icon" />
+            </IconButton>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 

@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import './Login.css'; // Link to custom CSS
+import './CustomerLogin.css'; // Link to custom CSS
 import api, { endpoints } from '../services/api';  
 
 

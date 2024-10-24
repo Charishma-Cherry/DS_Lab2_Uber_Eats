@@ -19,9 +19,6 @@ const HomePage = () => {
           >
             Explore Restaurants
           </button>
-          
-
-
           <button 
             className="homepage-btn"
             onClick={() => navigate('/restaurant/login')}  // Link to login page

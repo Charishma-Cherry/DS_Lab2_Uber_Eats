@@ -1,17 +1,12 @@
 // src/pages/RestaurantMenu.js
 
-import React, { useState, useEffect, useContext } from 'react';
-import { useParams } from 'react-router-dom';
-import api, { endpoints } from '../services/api';
-import { AuthContext } from '../context/AuthContext';
-import DishDetailsModal from '../components/DishDetailsModal';
-
 const RestaurantMenu = () => {
   const [restaurant, setRestaurant] = useState(null);
   const [menu, setMenu] = useState([]);
   const [selectedDish, setSelectedDish] = useState(null);
   const { id } = useParams();
   const { user } = useContext(AuthContext);
+  const { addToCart } = useCart(); // Use the CartContext to add items to cart
 
   useEffect(() => {
     fetchRestaurantAndMenu();
@@ -28,14 +23,14 @@ const RestaurantMenu = () => {
     }
   };
 
-  const addToCart = async (dishId) => {
+  const handleAddToCart = (dish) => {
     if (!user) {
       alert('Please log in to add items to your cart');
       return;
     }
 
     try {
-      await api.post(endpoints.addToCart, { dish_id: dishId, quantity: 1 });
+      addToCart(dish); // This will update the cart globally
       alert('Item added to cart successfully!');
     } catch (error) {
       console.error('Error adding item to cart:', error);
@@ -62,7 +57,7 @@ const RestaurantMenu = () => {
             <p>{dish.description}</p>
             <p>Price: ${dish.price}</p>
             <button onClick={() => setSelectedDish(dish)}>View Details</button>
-            <button onClick={() => addToCart(dish.id)}>Add to Cart</button>
+            <button onClick={() => handleAddToCart(dish)}>Add to Cart</button>
           </div>
         ))}
       </div>
@@ -70,7 +65,7 @@ const RestaurantMenu = () => {
         <DishDetailsModal
           dish={selectedDish}
           onClose={() => setSelectedDish(null)}
-          onAddToCart={() => addToCart(selectedDish.id)}
+          onAddToCart={() => handleAddToCart(selectedDish)}
         />
       )}
     </div>
