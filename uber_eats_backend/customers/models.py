@@ -65,9 +65,14 @@ class CartItem(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     dish = models.ForeignKey(Dish, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE,null=True) 
     STATE = [ ('placing', "Placing"), ('placed', 'Placed')]
     state = models.CharField(max_length=20, choices=STATE, default='placing')
     order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True)
+
+    # added new chari
+    def __str__(self):
+        return f"{self.dish.name} (x{self.quantity})"
 
 
 

@@ -19,5 +19,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/me/', me, name='me'),
+    # Begin New Chari
+    path('api/restaurants/dashboard/', RestaurantViewSet.as_view({'get': 'dashboard'}), name='restaurant_dashboard'),
+    path('api/restaurants/<int:pk>/', RestaurantViewSet.as_view({'get': 'retrieve'}), name='restaurant-detail'),
+    path('api/restaurants/<int:pk>/dishes/', RestaurantViewSet.as_view({'get': 'list_dishes'}), name='restaurant-dishes'),
+    # End New Chari
     path('api/customers/login/', CustomAuthToken.as_view(), name='api_token_auth'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
