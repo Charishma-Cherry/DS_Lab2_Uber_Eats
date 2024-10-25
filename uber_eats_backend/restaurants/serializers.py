@@ -20,8 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email']
 
 class RestaurantSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-
+    # user = UserSerializer(read_only=True)
     class Meta:
         model = Restaurant
         fields = ['id', 'user', 'name', 'address']

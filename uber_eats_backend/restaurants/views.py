@@ -42,17 +42,7 @@ def home(request):
 #             logger.warning(f"Login failed for Restaurant: {username}")
 #             return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
         
-#     @action(detail=False, methods=['get'])
-#     def orders(self, request):
-#         restaurant_id = request.GET.get('restaurantId')
-#         logger.info("rest id: " + restaurant_id)
-#         order_items = Order.objects.filter(restaurant__id=restaurant_id)
-#         logger.info(order_items)
-#         if(order_items) :
-#             serializer = OrderSerializer(order_items, many=True)
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-#         return Response([], status=status.HTTP_200_OK)
-    
+
 
 #     @action(detail=False, methods=['post'])
 #     def signup(self, request):
@@ -114,6 +104,19 @@ class RestaurantViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['get'])
+    def orders(self, request):
+        restaurant_id = request.GET.get('restaurantId')
+        logger.info( OrderSerializer(Order.objects, many=True).data)
+        logger.info("rest id: " + restaurant_id)
+
+        order_items = Order.objects.filter(restaurant__id=restaurant_id)
+        logger.info(order_items)
+        if(order_items) :
+            serializer = OrderSerializer(order_items, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response([], status=status.HTTP_200_OK)
+    
     @action(detail=False, methods=['get'])
     @permission_classes([IsAuthenticated])
     def dashboard(self, request):

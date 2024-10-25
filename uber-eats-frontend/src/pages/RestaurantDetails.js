@@ -112,7 +112,6 @@ const fetchRestaurantNames = async (restaurantIds) => {
     try {
        const restaurantIdsInCart = new Set(cartItems.map(item => item.dish.restaurant)
         // .filter(item => item.dish?.restaurant)  // Filter out invalid items
-        
       );
       const currentRestaurantId = restaurant?.id || 'unknown';
       const namesInCart = new Set(cartItems.map(item => item.dish.restaurant));
@@ -123,6 +122,7 @@ const fetchRestaurantNames = async (restaurantIds) => {
         const existingRestaurantId = [...restaurantIdsInCart][0];
         const existingRestaurantName = restaurantNames.get(existingRestaurantId);
 
+        //TODO: clear the cart items before adding the new ones
         setNewDishId(dishId);
         setShowModal(true);
         setRestaurantNamesInCart(new Set([existingRestaurantName]));

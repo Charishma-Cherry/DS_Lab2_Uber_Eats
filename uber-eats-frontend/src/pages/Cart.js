@@ -272,7 +272,7 @@ const Cart = () => {
           <ListGroup>
             {Array.from(cartItems).map(([rest_id, rest_cart]) => (
               <div key={rest_id}>
-                <h6 className="restaurant-name">{restaurantNames.get(rest_id) || `Restaurant ID: ${rest_id}`}</h6>
+                <h6 className="restaurant-name">{restaurantNames.get(rest_id) || `Restaurant: ${rest_id}`}</h6>
                 <ListGroup className="cart-list">
                   {rest_cart.items.map((item) => (
                     <ListGroup.Item key={item.id} className="cart-item">
