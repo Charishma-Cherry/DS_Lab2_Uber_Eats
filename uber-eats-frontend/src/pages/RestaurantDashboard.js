@@ -2,8 +2,12 @@
 import React from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+
 
 function RestaurantDashboard() {
+  const { id } = useParams();
+
   const navigate = useNavigate();
 
   const handleProfileManagement = () => {
@@ -11,7 +15,7 @@ function RestaurantDashboard() {
   };
 
   const handleOrdersManagement = () => {
-    navigate('/restaurant/orders'); // Navigate to the orders management page
+    navigate(`/restaurant/${id}/orders`); // Navigate to the orders management page
   };
 
   return (

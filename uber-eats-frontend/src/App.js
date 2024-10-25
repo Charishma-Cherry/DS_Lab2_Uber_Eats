@@ -37,9 +37,9 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/user/home" element={<RestaurantList />} />
-          <Route path="/restaurant/dashboard" element={<RestaurantDashboard />} />
+          <Route path="/restaurant/:id/dashboard" element={<RestaurantDashboard />} />
           <Route path="/restaurant/profile" element={<ProfileManagement />} />
-          <Route path="/restaurant/orders" element={<OrdersManagement />} />
+          <Route path="/restaurant/:id/orders" element={<OrdersManagement />} />
           {/* <Route path="/restaurant/home/:id" element={<RestaurantDashboard />} /> */}
           <Route path="/customer/login" element={<CustomerLogin />} />
           <Route path="/restaurant/login" element={<RestaurantLogin />} />

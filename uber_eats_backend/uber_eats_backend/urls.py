@@ -13,7 +13,7 @@ def home_view(request):
 
 router = DefaultRouter()
 router.register(r'customers', CustomerViewSet)
-router.register(r'orders', OrderViewSet, basename='order')
+router.register(r'orders', OrderViewSet)
 router.register(r'favorite-restaurants', FavoriteRestaurantViewSet, basename='favorite-restaurant')
 router.register(r'cart-items', CartItemViewSet, basename='cart-item')
 router.register(r'restaurants', RestaurantViewSet)  # Handles the new restaurant signup
@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/restaurants/dashboard/', RestaurantViewSet.as_view({'get': 'dashboard'}), name='restaurant_dashboard'),
     path('api/restaurants/<int:pk>/', RestaurantViewSet.as_view({'get': 'retrieve'}), name='restaurant-detail'),
     path('api/restaurants/<int:pk>/dishes/', RestaurantViewSet.as_view({'get': 'list_dishes'}), name='restaurant-dishes'),
+
     # End New Chari
     path('api/customers/login/', CustomAuthToken.as_view(), name='api_token_auth'),
     #adding path Windows -- vaishh

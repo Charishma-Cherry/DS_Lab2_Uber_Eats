@@ -126,11 +126,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     #permission_classes = [IsAuthenticated]
     permission_classes = [AllowAny] 
-
-    # def get_queryset(self):
-    #     return Order.objects.filter(customer=self.request.user.customer)
-
-    def get_queryset(self):
+    
+    def get_queryset(self): 
         user = self.request.user
         if hasattr(user, 'customer'):
             # If the user is a customer, show only their orders
@@ -140,16 +137,6 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Order.objects.filter(restaurant=user.restaurant)
         return Order.objects.none()
     
-    @action(detail=True, methods=['patch'])
-    def update_order_status(self, request, pk=None):
-        order = self.get_object()
-        status = request.data.get('status')
-        if status in dict(Order.STATUS_CHOICES):
-            order.status = status
-            order.save()
-            return Response({'status': 'Order status updated'})
-        return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
-
     # @action(detail=False, methods=['post'])
     # def place_order(self, request):
     #     customer = Customer.objects.get(user=request.user)
@@ -216,6 +203,19 @@ class OrderViewSet(viewsets.ModelViewSet):
             serializer = OrderSerializer(order, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response([], status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['post'])
+    def updateOrderStatus(self, request):
+        order_id = request.data.get('orderId')
+        order = Order.objects.filter(id=order_id).first()
+        status = request.data.get('status')
+        logger.info(status)
+        if status in dict(Order.STATUS_CHOICES):
+            order.status = status
+            order.save()
+            order.refresh_from_db() 
+            return Response({'status': 'Order status updated'})
+        return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
 
 class FavoriteRestaurantViewSet(viewsets.ModelViewSet):
     queryset = FavoriteRestaurant.objects.all()

@@ -81,7 +81,7 @@ function RestaurantLogin() {
       localStorage.setItem('user_id', user_id);
       localStorage.setItem('restaurant_id', restaurant_id);
       
-      navigate('/restaurant/dashboard');  // Redirect to dashboard
+      navigate(`/restaurant/${restaurant_id}/dashboard`);  // Redirect to dashboard
     } catch (err) {
       const errorMessage = err.response?.data?.error || 'Failed to log in';
       setError(errorMessage);

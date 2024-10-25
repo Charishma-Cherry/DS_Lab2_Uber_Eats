@@ -72,10 +72,10 @@ class CartItemSerializer(serializers.ModelSerializer):
         model = CartItem
         fields = ['id', 'dish', 'quantity', 'restaurant' , 'customer' , 'order']
 
-class RestaurantSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Restaurant
-        fields = ['id', 'name', 'description', 'address', 'phone_number', 'image', 'rating']
+# class RestaurantSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Restaurant
+#         fields = ['id', 'name', 'description', 'address', 'phone_number', 'image', 'rating']
 
 class DishSerializer(serializers.ModelSerializer):
     class Meta:
