@@ -54,3 +54,4 @@ function Header() { // Removed cartCount from props
 }
 
 export default Header;
+

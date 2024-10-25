@@ -20,62 +20,101 @@ function RestaurantDetails() {
 
   useEffect(() => {
     const fetchRestaurantAndDishes = async () => {
-      try {
-        setLoading(true);
-        console.log(`Fetching data for restaurant ID: ${id}`);
-        const [restaurantResponse, dishesResponse] = await Promise.all([
-          api.get(`${endpoints.restaurants}${id}/`),
-          api.get(`${endpoints.restaurants}${id}/dishes/`)
-        ]);
-        setRestaurant(restaurantResponse.data);
-        setDishes(dishesResponse.data);
-      } catch (error) {
-        console.error('Error fetching restaurant details:', error);
-        setError('Failed to load restaurant details. Please try again.');
-      } finally {
-        setLoading(false);
-      }
+        try {
+            setLoading(true);
+            console.log(`Fetching data for restaurant ID: ${id}`);
+            const [restaurantResponse, dishesResponse] = await Promise.all([
+                api.get(`${endpoints.restaurants}${id}/`),
+                api.get(`${endpoints.restaurants}${id}/dishes/`)
+            ]);
+            setRestaurant(restaurantResponse.data);
+            setDishes(dishesResponse.data);
+        } catch (error) {
+            console.error('Error fetching restaurant details:', error);
+            setError('Failed to load restaurant details. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     fetchRestaurantAndDishes();
-  }, [id]);
+}, [id]);
+
 
   // Fetch cart items on component mount
   useEffect(() => {
     const fetchCartItems = async () => {
-      try {
-        const cartResponse = await api.get(endpoints.cartItems);
-        setCartItems(cartResponse.data); // Store cart items
-      } catch (error) {
-        console.error('Error fetching cart items:', error);
-      }
+        try {
+            const cartResponse = await api.get(endpoints.cartItems);
+            // console.log("Cart Items (after fetch):", cartResponse.data); // Log the fetched cart items
+
+            setCartItems(cartResponse.data); // Store cart items
+
+            // Update cart count based on fetched items
+            // const count = cartResponse.data.length; //New
+            // console.log("Cart Count Updated:", count);
+            // setCartCount(count); //New
+        } catch (error) {
+            console.error('Error fetching cart items:', error);
+        }
     };
 
     fetchCartItems();
-  }, []);
+}, []);
 
-  // Update cart count whenever cartItems changes
-  useEffect(() => {
-    const count = cartItems.length; // Update cart count
-    console.log("Cart Count Updated:", count);
-    setCartCount(count);
-  }, [cartItems]);
+  // Update cart count whenever cartItems changes //New
+  // useEffect(() => {
+  //   const count = cartItems.length; // Update cart count
+  //   console.log("Cart Count Updated:", count);
+  //   setCartCount(count);
+  // }, [cartItems]);
 
-  const fetchRestaurantNames = async (restaurantIds) => {
-    const restaurantNames = new Map();
-    const fetchPromises = restaurantIds.map(async (rest_id) => {
-      const restaurantResponse = await api.get(`${endpoints.restaurants}${rest_id}/`);
-      restaurantNames.set(rest_id, restaurantResponse.data.name);
-    });
-    await Promise.all(fetchPromises);
-    return restaurantNames;
-  };
+
+//   const fetchRestaurantNames = async (restaurantIds) => {
+//     const restaurantNames = new Map();
+//     const fetchPromises = restaurantIds.map(async (rest_id) => {
+//         try {
+//             const restaurantResponse = await api.get(`${endpoints.restaurants}${rest_id}/`);
+//             restaurantNames.set(rest_id, restaurantResponse.data.name);
+//         } catch (error) {
+//             console.error(`Error fetching restaurant ID ${rest_id}:`, error);
+//             restaurantNames.set(rest_id, 'Unknown Restaurant'); // Fallback name for error cases
+//         }
+//     });
+//     await Promise.all(fetchPromises);
+//     return restaurantNames;
+// };
+
+const fetchRestaurantNames = async (restaurantIds) => {
+  const restaurantNames = new Map();
+  const fetchPromises = restaurantIds.map(async (rest_id) => {
+      // Check if rest_id is defined
+      if (!rest_id) {
+          console.error("Undefined restaurant ID detected.");
+          restaurantNames.set(rest_id, 'Unknown Restaurant'); // Fallback for undefined ID
+          return; // Skip fetching for this ID
+      }
+      try {
+          const restaurantResponse = await api.get(`${endpoints.restaurants}${rest_id}/`);
+          restaurantNames.set(rest_id, restaurantResponse.data.name);
+      } catch (error) {
+          console.error(`Error fetching restaurant ID ${rest_id}:`, error);
+          restaurantNames.set(rest_id, 'Unknown Restaurant'); // Fallback name for error cases
+      }
+  });
+  await Promise.all(fetchPromises);
+  return restaurantNames;
+};
+
+
 
   const handleAddToCart = async (dishId) => {
     try {
-      const restaurantIdsInCart = new Set(cartItems.map(item => item.dish.restaurant));
-      const currentRestaurantId = restaurant?.id;
-
+       const restaurantIdsInCart = new Set(cartItems.map(item => item.dish.restaurant)
+        // .filter(item => item.dish?.restaurant)  // Filter out invalid items
+        
+      );
+      const currentRestaurantId = restaurant?.id || 'unknown';
       const namesInCart = new Set(cartItems.map(item => item.dish.restaurant));
       setRestaurantNamesInCart(namesInCart);
 
@@ -88,7 +127,7 @@ function RestaurantDetails() {
         setShowModal(true);
         setRestaurantNamesInCart(new Set([existingRestaurantName]));
       } else {
-        await addDishToCart(dishId);
+        await addDishToCart(dishId,currentRestaurantId);
       }
     } catch (error) {
       console.error('Error fetching cart items:', error);
@@ -96,24 +135,35 @@ function RestaurantDetails() {
     }
   };
 
-  const addDishToCart = async (dishId) => {
+
+
+
+
+  const addDishToCart = async (dishId, restaurantId) => {
     try {
-      const response = await api.post(endpoints.addToCart, { dish_id: dishId, quantity: 1 });
-      console.log("Dish added to cart:", response.data);
+        // Include restaurantId in the request payload
+        const response = await api.post(endpoints.addToCart, { 
+            dish_id: dishId, 
+            restaurant_id: restaurantId, // Add restaurantId to the payload
+            quantity: 1 
+        });
+        
+        console.log("Dish added to cart:", response.data);
 
-      // Fetch updated cart items after adding
-      const cartResponse = await api.get(endpoints.cartItems);
-      setCartItems(cartResponse.data); // Update cart items state
+        // Fetch updated cart items after adding
+        const cartResponse = await api.get(endpoints.cartItems);
+        setCartItems(cartResponse.data); // Update cart items state
 
-      // Show alert after a delay
-      setTimeout(() => {
-        alert('Dish added to cart successfully!');
-      }, 100); // 100 milliseconds delay
+        // Show alert after a delay
+        setTimeout(() => {
+            alert('Dish added to cart successfully!');
+        }, 100); // 100 milliseconds delay
     } catch (error) {
-      console.error('Error adding dish to cart:', error);
-      alert('Failed to add dish to cart. Please try again.');
+        console.error('Error adding dish to cart:', error);
+        alert('Failed to add dish to cart. Please try again.');
     }
-  };
+};
+
 
   const handleConfirmNewOrder = async () => {
     await addDishToCart(newDishId);
@@ -131,7 +181,6 @@ function RestaurantDetails() {
   const existingRestaurantName = Array.from(restaurantNamesInCart).pop() || 'Unknown Restaurant';
 
   // Debugging render to check for updates
-  // Log the cart count whenever it changes
   console.log("Rendering RestaurantDetails, Cart Count:", cartCount);
 
   return (
