@@ -10,6 +10,8 @@ import Signup from './pages/Signup';
 import RestaurantList from './pages/RestaurantList';
 import RestaurantDetails from './pages/RestaurantDetails';
 import RestaurantDashboard from './pages/RestaurantDashboard';
+import ProfileManagement from './pages/ProfileManagement'; // Create this component
+import OrdersManagement from './pages/OrdersManagement'; // Create this component
 import UserProfile from './pages/UserProfile';
 import Cart from './pages/Cart';
 import OrderHistory from './pages/OrderHistory';
@@ -35,7 +37,10 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/user/home" element={<RestaurantList />} />
-          <Route path="/restaurant/home/:id" element={<RestaurantDashboard />} />
+          <Route path="/restaurant/dashboard" element={<RestaurantDashboard />} />
+          <Route path="/restaurant/profile" element={<ProfileManagement />} />
+          <Route path="/restaurant/orders" element={<OrdersManagement />} />
+          {/* <Route path="/restaurant/home/:id" element={<RestaurantDashboard />} /> */}
           <Route path="/customer/login" element={<CustomerLogin />} />
           <Route path="/restaurant/login" element={<RestaurantLogin />} />
           <Route path="/order-details/:id" element={<OrderDetail />} />
