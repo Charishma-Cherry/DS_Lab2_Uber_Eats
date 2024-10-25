@@ -64,9 +64,12 @@ class CartItemSerializer(serializers.ModelSerializer):
     dish = DishSerializer(read_only=True)
     order = OrderSerializer(read_only=True)
 
+    # class Meta:
+    #     model = CartItem
+    #     fields = '__all__'
     class Meta:
         model = CartItem
-        fields = '__all__'
+        fields = ['id', 'dish', 'quantity', 'restaurant' , 'customer' , 'order']
 
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:

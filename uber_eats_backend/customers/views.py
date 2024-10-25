@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-from .models import Customer, Order, FavoriteRestaurant, CartItem, DeliveryAddress, Dish
+from .models import Customer, Order, FavoriteRestaurant, CartItem, DeliveryAddress, Dish ,Restaurant
 from .serializers import CustomerSerializer, OrderSerializer, FavoriteRestaurantSerializer, CartItemSerializer, DeliveryAddressSerializer
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -198,24 +198,61 @@ class CartItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return CartItem.objects.filter(customer=self.request.user.customer, state='placing')
+        cart_items = CartItem.objects.filter(customer=self.request.user.customer, state='placing')
+        logger.info(f"Cart items: {cart_items.values()}")
+        return cart_items
+        # return CartItem.objects.filter(customer=self.request.user.customer, state='placing')
+
+    # @action(detail=False, methods=['post'])
+    # def add_to_cart(self, request):
+    #     customer = request.user.customer
+    #     dish_id = int(request.data.get('dish_id'))
+
+    #     dish = Dish.objects.get(id=dish_id)
+    #     quantity = request.data.get('quantity', 1)
+    #     cart_item = CartItem.objects.create(
+    #         customer=customer,
+    #         dish=dish,
+    #         quantity=quantity
+    #     )
+
+    #     serializer = self.get_serializer(cart_item)
+    #     return Response(serializer.data)
 
     @action(detail=False, methods=['post'])
     def add_to_cart(self, request):
         customer = request.user.customer
-        dish_id = int(request.data.get('dish_id'))
-
-        dish = Dish.objects.get(id=dish_id)
+        dish_id = request.data.get('dish_id')
+        restaurant_id = request.data.get('restaurant_id')
         quantity = request.data.get('quantity', 1)
-        cart_item = CartItem.objects.create(
-            customer=customer,
-            dish=dish,
-            quantity=quantity
-        )
 
-        serializer = self.get_serializer(cart_item)
-        return Response(serializer.data)
-    
+        try:
+            dish = Dish.objects.get(id=dish_id)  # Fetch the dish
+            restaurant = dish.restaurant
+            
+            # Check if the restaurant is associated with the dish
+            if dish.restaurant.id != restaurant.id:
+                return Response({'error': 'Restaurant ID does not match the dish.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Create a new cart item with the restaurant reference
+            cart_item = CartItem.objects.create(
+                customer=customer,
+                dish=dish,
+                quantity=quantity,
+                restaurant=restaurant  # Include restaurant reference
+            )
+
+            serializer = self.get_serializer(cart_item)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except Dish.DoesNotExist:
+            return Response({'error': 'Dish not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Restaurant.DoesNotExist:
+            return Response({'error': 'Restaurant not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Error adding to cart: {str(e)}")
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
 
 #Order Details to view in order history
     @action(detail=False, methods=['get'])
@@ -223,6 +260,8 @@ class CartItemViewSet(viewsets.ModelViewSet):
         order_id = request.data.get('order_id')
         logger.info(request.data)
         order_items = CartItem.objects.filter(order__id=order_id)
+        for item in order_items:
+            logger.info(f"CartItem: {item}, Restaurant: {item.restaurant}")  # Log restaurant info for each item
         serializer = self.get_serializer(order_items)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
