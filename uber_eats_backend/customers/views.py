@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import AllowAny
 
 logger = logging.getLogger(__name__)
 
@@ -123,42 +124,88 @@ class CustomerViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny] 
+
+    # def get_queryset(self):
+    #     return Order.objects.filter(customer=self.request.user.customer)
 
     def get_queryset(self):
-        return Order.objects.filter(customer=self.request.user.customer)
+        user = self.request.user
+        if hasattr(user, 'customer'):
+            # If the user is a customer, show only their orders
+            return Order.objects.filter(customer=user.customer)
+        elif hasattr(user, 'restaurant'):
+            # If the user is a restaurant, show orders placed for their restaurant
+            return Order.objects.filter(restaurant=user.restaurant)
+        return Order.objects.none()
+    
+    @action(detail=True, methods=['patch'])
+    def update_order_status(self, request, pk=None):
+        order = self.get_object()
+        status = request.data.get('status')
+        if status in dict(Order.STATUS_CHOICES):
+            order.status = status
+            order.save()
+            return Response({'status': 'Order status updated'})
+        return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['post'])
+    # @action(detail=False, methods=['post'])
+    # def place_order(self, request):
+    #     customer = Customer.objects.get(user=request.user)
+    #     restaurant_id = request.data.get('restaurant_id')
+    #     logger.info(restaurant_id)
+
+    #     cart_items = CartItem.objects.filter(customer=customer).select_related('dish')
+    #     rest_cart_items = cart_items.filter(dish__restaurant=restaurant_id,state ='placing')
+    #     logger.info(rest_cart_items)
+        
+    #     if not rest_cart_items:
+    #         return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
+
+    #     total_price = sum(item.dish.price * item.quantity for item in rest_cart_items)
+    #     order = Order.objects.create(
+    #         customer=customer,
+    #         restaurant=rest_cart_items[0].dish.restaurant,
+    #         total_price=total_price,
+    #         delivery_address=request.data.get('delivery_address')
+    #     )
+
+#@action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], url_path='place_order')
     def place_order(self, request):
         customer = Customer.objects.get(user=request.user)
         restaurant_id = request.data.get('restaurant_id')
-        logger.info(restaurant_id)
+        cart_items = CartItem.objects.filter(customer=customer, restaurant_id=restaurant_id, state='placing')
 
-        cart_items = CartItem.objects.filter(customer=customer).select_related('dish')
-        rest_cart_items = cart_items.filter(dish__restaurant=restaurant_id,state ='placing')
-        logger.info(rest_cart_items)
-        
-        if not rest_cart_items:
+        if not cart_items:
             return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
 
-        total_price = sum(item.dish.price * item.quantity for item in rest_cart_items)
+        total_price = sum(item.dish.price * item.quantity for item in cart_items)
         order = Order.objects.create(
             customer=customer,
-            restaurant=rest_cart_items[0].dish.restaurant,
+            restaurant_id=restaurant_id,
             total_price=total_price,
             delivery_address=request.data.get('delivery_address')
         )
 
+        # Link Cart Items to Order and update state
+        cart_items.update(order=order, state='placed')
+
+        serializer = OrderSerializer(order)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
         # Add order items and clear cart
         # for item in cart_items:
         #     order.create(dish=item.dish, quantity=item.quantity, price=item.dish.price)
-        #     item.delete()
+        # #     item.delete()
 
-        rest_cart_items.update(order=order.id, state='placed')
+        # rest_cart_items.update(order=order.id, state='placed')
 
-        serializer = self.get_serializer(order)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+        # serializer = self.get_serializer(order)
+        # return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
     @action(detail=False, methods=['get'])
     def getOrderDetail(self, request):
         order_id = request.GET.get('orderId')

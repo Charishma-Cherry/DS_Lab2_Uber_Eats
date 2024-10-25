@@ -55,6 +55,7 @@ class OrderSerializer(serializers.ModelSerializer):
     delivery_address = DeliveryAddressSerializer(read_only=True)
     total_price = serializers.DecimalField(max_digits=10, decimal_places=2)
     customer = CustomerSerializer(read_only=True)
+    restaurant = RestaurantSerializer(read_only=True) #added V
     class Meta:
         model = Order
         fields = '__all__'
