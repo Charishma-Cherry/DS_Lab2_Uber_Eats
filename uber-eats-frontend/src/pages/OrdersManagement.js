@@ -1,165 +1,142 @@
 import React, { useState, useEffect } from 'react';
-import { Container, CardMedia, Typography, Button, Select, Stack, List, ListItem, Divider, Pagination } from '@mui/material';
-
-import api, { endpoints } from '../services/api';
-import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
+import api from '../services/api';
+import {
+  Container,
+  Select,
+  MenuItem,
+  Button,
+  List,
+  ListItem,
+  Divider,
+  Typography,
+  CircularProgress,
+} from '@mui/material';
 
 const OrdersManagement = () => {
-  const [error, setError] = useState('');
-  const [restaurant, setRestaurant] = useState(null);
-  const [dishes, setDishes] = useState([]);
+  const { restaurantId } = useParams();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const navigate = useNavigate();
-  const { id } = useParams();
-
-
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Set how many orders you want per page
-
-  // Calculate the start and end indices for the current page
-  const indexOfLastOrder = currentPage * itemsPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - itemsPerPage;
-  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
-
-  // Handle page change
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
+  const [selectedStatuses, setSelectedStatuses] = useState({});
 
   useEffect(() => {
-    fetchRestaurantProfile();
-    fetchDishes();
-    fetchOrders(id);
-    console.log(id)
-  }, [id]);
+    fetchOrders();
+  }, [restaurantId]);
 
-  const fetchRestaurantProfile = async () => {
+  const fetchOrders = async () => {
     try {
-      const response = await api.get('/restaurants/me/');
-      setRestaurant(response.data);
-    } catch (err) {
-      console.error('Error fetching restaurant profile:', err);
-    }
-  };
+      const response = await api.get(`/restaurants/${restaurantId}/orders`);
+      console.log("Fetching orders for restaurant ID:", restaurantId);
+      console.log("API Response:", response.data); // Log the entire response
 
-  const fetchDishes = async () => {
-    try {
-      const response = await api.get('/dishes/');
-      setDishes(response.data);
-    } catch (err) {
-      console.error('Error fetching dishes:', err);
-    }
-  };
-
-  const fetchOrders = async (restaurantId) => {
-    try {
-      console.log("rest id: "+ restaurantId)
-      const response = await api.get('/restaurants/orders?restaurantId='+restaurantId);
-      setOrders(response.data);
+      // Filter orders to include only those related to the logged-in restaurant
+      const filteredOrders = response.data.filter(order => order.restaurant.id === parseInt(restaurantId));
+      
+      setOrders(filteredOrders); // Set only the filtered orders
+      const initialSelectedStatuses = {};
+      filteredOrders.forEach(order => {
+        initialSelectedStatuses[order.id] = order.status;
+      });
+      setSelectedStatuses(initialSelectedStatuses);
     } catch (err) {
       setError('Failed to fetch orders');
-      console.error('Error fetching orders:', err);
+      console.error('Error fetching orders:', err); // Log the error for debugging
     } finally {
       setLoading(false);
     }
   };
 
-  const handleProfileUpdate = async (updatedData) => {
+  const handleFilterChange = (event) => {
+    setFilterStatus(event.target.value);
+  };
+
+  const handleStatusChange = (orderId, newStatus) => {
+    console.log(`Changing status for order ${orderId} to ${newStatus}`);
+    
+    setSelectedStatuses(prevState => ({
+      ...prevState,
+      [orderId]: newStatus,
+    }));
+  };
+
+  const handleUpdateOrderStatus = async (orderId) => {
+    const newStatus = selectedStatuses[orderId];
+    console.log(`Updating order ${orderId} status to ${newStatus}`);
+    
     try {
-      const response = await api.patch('/restaurants/me/', updatedData);
-      setRestaurant(response.data);
-      alert('Profile updated successfully');
+      await api.patch(`/orders/${orderId}/`, { status: newStatus });
+      console.log('API call successful, updating orders state.');
+
+      setOrders(prevOrders => prevOrders.map(order => 
+        order.id === orderId ? { ...order, status: newStatus } : order
+      ));
+
+      alert('Order status updated successfully');
     } catch (err) {
-      setError('Failed to update profile');
-      console.error('Error updating profile:', err);
+      setError('Failed to update order status');
+      console.error('Error updating order status:', err);
     }
   };
 
-  const handleAddDish = async (newDish) => {
-    try {
-      const response = await api.post('/dishes/', newDish);
-      setDishes([...dishes, response.data]);
-      alert('Dish added successfully');
-    } catch (err) {
-      setError('Failed to add dish');
-      console.error('Error adding dish:', err);
-    }
-  };
+  const filteredOrders = filterStatus === 'all' ? orders : orders.filter(order => order.status === filterStatus);
 
-  const handleUpdateDish = async (dishId, updatedDish) => {
-    try {
-      const response = await api.patch(`/dishes/${dishId}/`, updatedDish);
-      setDishes(dishes.map(dish => dish.id === dishId ? response.data : dish));
-      alert('Dish updated successfully');
-    } catch (err) {
-      setError('Failed to update dish');
-      console.error('Error updating dish:', err);
-    }
-  };
-
-  const handleDeleteDish = async (dishId) => {
-    try {
-      await api.delete(`/dishes/${dishId}/`);
-      setDishes(dishes.filter(dish => dish.id !== dishId));
-      alert('Dish deleted successfully');
-    } catch (err) {
-      setError('Failed to delete dish');
-      console.error('Error deleting dish:', err);
-    }
-  };
-
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return <CircularProgress />;
+  if (error) return <Typography color="error">{error}</Typography>;
 
   return (
-    <div>    
+    <Container>
+      <Typography variant="h4" gutterBottom>
+        Orders Management
+      </Typography>
 
-      <h2>Order Management</h2>
-      
-      <List sx={{ width: '60%', bgcolor: 'background.paper' }}>
-        {currentOrders.map(order => (
-          <ListItem
-            key={order.id}
-            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}
-          >
-            Order #{order.id}
-            <Divider orientation="vertical" flexItem />
-            <div>
-              Status: {order.status.toUpperCase()}
-              {/* <Select
-                value={order.status}
-                onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+      <Select value={filterStatus} onChange={handleFilterChange} sx={{ marginBottom: 2 }}>
+        <MenuItem value="all">All</MenuItem>
+        <MenuItem value="new">New</MenuItem>
+        <MenuItem value="delivered">Delivered</MenuItem>
+        <MenuItem value="cancelled">Cancelled</MenuItem>
+      </Select>
+
+      <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+        {filteredOrders.length === 0 ? (
+          <Typography>No orders found.</Typography>
+        ) : (
+          filteredOrders.map(order => (
+            <ListItem key={order.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography>Order #{order.id}</Typography>
+              <Divider orientation="vertical" flexItem />
+              <Typography>Status: {order.status.toUpperCase()}</Typography>
+              <Select
+                value={selectedStatuses[order.id]}
+                onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                sx={{ width: '150px' }}
               >
                 <MenuItem value="new">New</MenuItem>
                 <MenuItem value="preparing">Preparing</MenuItem>
                 <MenuItem value="on_the_way">On the Way</MenuItem>
+                <MenuItem value="pickup_ready">Pick Up Ready</MenuItem>
                 <MenuItem value="delivered">Delivered</MenuItem>
-                <MenuItem value="cancelled">Cancelled</MenuItem>
-              </Select> */}
-            </div>
-            <Button onClick={() => navigate(`/order-details/${order.id}`)}>Go to Order</Button>
-          </ListItem>
-        ))}
+                <MenuItem value="picked_up">Picked Up</MenuItem>
+              </Select>
+              <Button onClick={() => handleUpdateOrderStatus(order.id)}>Update Status</Button>
+
+              <div style={{ marginLeft: '20px' }}>
+                <Typography variant="body1"><strong>Name:</strong> {order.customer.name}</Typography>
+                <Typography variant="body1"><strong>Email:</strong> {order.customer.email}</Typography>
+                <Typography variant="body1"><strong>Phone:</strong> {order.customer.phone_number}</Typography>
+                <Typography variant="body1"><strong>City:</strong> {order.customer.city}</Typography>
+                <Typography variant="body1"><strong>State:</strong> {order.customer.state}</Typography>
+                <Typography variant="body1"><strong>Country:</strong> {order.customer.country}</Typography>
+              </div>
+            </ListItem>
+          ))
+        )}
       </List>
-
-    
-      <Pagination
-        count={Math.ceil(orders.length / itemsPerPage)} // Total number of pages
-        page={currentPage}
-        onChange={handlePageChange}
-        color="primary"
-        sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}
-      />
-  
-      
-
-    </div>
+    </Container>
   );
 };
 
 export default OrdersManagement;
+
+

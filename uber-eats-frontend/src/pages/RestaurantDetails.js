@@ -20,7 +20,14 @@ function RestaurantDetails() {
 
   useEffect(() => {
     const fetchRestaurantAndDishes = async () => {
-        try {
+      //New chari
+      if (!id) {
+        console.error("Restaurant ID is undefined.");
+        setError('Restaurant ID not found.');
+        setLoading(false);
+        return; // Stop the fetch function if ID is undefined
+    }  
+      try {
             setLoading(true);
             console.log(`Fetching data for restaurant ID: ${id}`);
             const [restaurantResponse, dishesResponse] = await Promise.all([
@@ -40,20 +47,15 @@ function RestaurantDetails() {
     fetchRestaurantAndDishes();
 }, [id]);
 
+console.log("Cart Items:", cartItems);
 
   // Fetch cart items on component mount
   useEffect(() => {
     const fetchCartItems = async () => {
         try {
             const cartResponse = await api.get(endpoints.cartItems);
-            // console.log("Cart Items (after fetch):", cartResponse.data); // Log the fetched cart items
-
+            console.log("Fetched Cart Items:", cartResponse.data); 
             setCartItems(cartResponse.data); // Store cart items
-
-            // Update cart count based on fetched items
-            // const count = cartResponse.data.length; //New
-            // console.log("Cart Count Updated:", count);
-            // setCartCount(count); //New
         } catch (error) {
             console.error('Error fetching cart items:', error);
         }
@@ -63,27 +65,11 @@ function RestaurantDetails() {
 }, []);
 
   // Update cart count whenever cartItems changes //New
-  // useEffect(() => {
-  //   const count = cartItems.length; // Update cart count
-  //   console.log("Cart Count Updated:", count);
-  //   setCartCount(count);
-  // }, [cartItems]);
-
-
-//   const fetchRestaurantNames = async (restaurantIds) => {
-//     const restaurantNames = new Map();
-//     const fetchPromises = restaurantIds.map(async (rest_id) => {
-//         try {
-//             const restaurantResponse = await api.get(`${endpoints.restaurants}${rest_id}/`);
-//             restaurantNames.set(rest_id, restaurantResponse.data.name);
-//         } catch (error) {
-//             console.error(`Error fetching restaurant ID ${rest_id}:`, error);
-//             restaurantNames.set(rest_id, 'Unknown Restaurant'); // Fallback name for error cases
-//         }
-//     });
-//     await Promise.all(fetchPromises);
-//     return restaurantNames;
-// };
+  useEffect(() => {
+    const count = cartItems.length; // Update cart count
+    console.log("Cart Count Updated:", count);
+    setCartCount(count);
+  }, [cartItems]);
 
 const fetchRestaurantNames = async (restaurantIds) => {
   const restaurantNames = new Map();
@@ -91,7 +77,6 @@ const fetchRestaurantNames = async (restaurantIds) => {
       // Check if rest_id is defined
       if (!rest_id) {
           console.error("Undefined restaurant ID detected.");
-          restaurantNames.set(rest_id, 'Unknown Restaurant'); // Fallback for undefined ID
           return; // Skip fetching for this ID
       }
       try {
@@ -99,7 +84,7 @@ const fetchRestaurantNames = async (restaurantIds) => {
           restaurantNames.set(rest_id, restaurantResponse.data.name);
       } catch (error) {
           console.error(`Error fetching restaurant ID ${rest_id}:`, error);
-          restaurantNames.set(rest_id, 'Unknown Restaurant'); // Fallback name for error cases
+          restaurantNames.set(rest_id, 'Unknown Restaurant'); 
       }
   });
   await Promise.all(fetchPromises);
@@ -110,10 +95,14 @@ const fetchRestaurantNames = async (restaurantIds) => {
 
   const handleAddToCart = async (dishId) => {
     try {
-       const restaurantIdsInCart = new Set(cartItems.map(item => item.dish.restaurant)
-        // .filter(item => item.dish?.restaurant)  // Filter out invalid items
+      const restaurantIdsInCart = new Set(cartItems
+        .map(item => item.restaurant)
+        .filter(restId => restId !== undefined) // Filter out undefined values
       );
-      const currentRestaurantId = restaurant?.id || 'unknown';
+       const currentRestaurantId = restaurant?.id || 'unknown';
+       console.log("Filtered Restaurant IDs in Cart:", restaurantIdsInCart);
+       console.log("Current Restaurant ID:", currentRestaurantId);
+      
       const namesInCart = new Set(cartItems.map(item => item.dish.restaurant));
       setRestaurantNamesInCart(namesInCart);
 
@@ -121,8 +110,6 @@ const fetchRestaurantNames = async (restaurantIds) => {
         const restaurantNames = await fetchRestaurantNames([...restaurantIdsInCart]);
         const existingRestaurantId = [...restaurantIdsInCart][0];
         const existingRestaurantName = restaurantNames.get(existingRestaurantId);
-
-        //TODO: clear the cart items before adding the new ones
         setNewDishId(dishId);
         setShowModal(true);
         setRestaurantNamesInCart(new Set([existingRestaurantName]));
@@ -136,20 +123,23 @@ const fetchRestaurantNames = async (restaurantIds) => {
   };
 
 
-
-
-
   const addDishToCart = async (dishId, restaurantId) => {
     try {
-        // Include restaurantId in the request payload
-        const response = await api.post(endpoints.addToCart, { 
+
+       // Check if the dish is already in the cart
+       const existingCartItem = cartItems.find(item => item.dish.id === dishId && item.restaurant === restaurantId);
+       
+       if (existingCartItem) {
+        // If the item is already in the cart, increment the quantity
+        await api.patch(`${endpoints.cartItems}${existingCartItem.id}/`, { quantity: existingCartItem.quantity + 1 });
+       } else {
+        // If the item is not in the cart, add it as a new entry
+        await api.post(endpoints.addToCart, { 
             dish_id: dishId, 
-            restaurant_id: restaurantId, // Add restaurantId to the payload
+            restaurant_id: restaurantId, 
             quantity: 1 
         });
-        
-        console.log("Dish added to cart:", response.data);
-
+       }
         // Fetch updated cart items after adding
         const cartResponse = await api.get(endpoints.cartItems);
         setCartItems(cartResponse.data); // Update cart items state
@@ -176,12 +166,13 @@ const fetchRestaurantNames = async (restaurantIds) => {
 
   if (loading) return <LoadingSpinner />;
   if (error) return <div className="text-center text-danger">{error}</div>;
-  if (!restaurant) return <div className="text-center">Restaurant not found</div>;
+  // if (!restaurant) return <div className="text-center">Restaurant not found</div>;
 
   const existingRestaurantName = Array.from(restaurantNamesInCart).pop() || 'Unknown Restaurant';
 
   // Debugging render to check for updates
-  console.log("Rendering RestaurantDetails, Cart Count:", cartCount);
+  // console.log("Rendering RestaurantDetails, Cart Count:", cartCount);
+  if (!restaurant) return <div className="text-center">Restaurant not found</div>;
 
   return (
     <Container className="restaurant-details">
