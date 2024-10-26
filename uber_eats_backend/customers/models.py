@@ -61,6 +61,15 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     delivery_address = models.ForeignKey(DeliveryAddress, on_delete=models.SET_NULL, null=True)
 
+# New Chari
+class OrderItem(models.Model):  # New OrderItem model
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
+    dish = models.ForeignKey(Dish, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.dish.name} (x{self.quantity})"
+
 class CartItem(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     dish = models.ForeignKey(Dish, on_delete=models.CASCADE)

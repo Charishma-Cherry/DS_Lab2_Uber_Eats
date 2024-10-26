@@ -21,13 +21,15 @@ const OrderPlacement = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+  const [restaurantName, setRestaurantName] = useState('');
+
 
   useEffect(() => {
     fetchCartItems();
     fetchAddresses();
   }, []);
 
-  const fetchCartItems = () => {
+  const fetchCartItems = async() => {
     const cart_data = location.state;
     if (!cart_data) {
       navigate('/cart');
@@ -35,6 +37,15 @@ const OrderPlacement = () => {
     if (cart_data.rest_id && cart_data.rest_cart) {
       setCartItems(cart_data.rest_cart);
       setRestId(cart_data.rest_id);
+      //New
+       // Fetch restaurant name using the restId
+      try {
+      const response = await api.get(`${endpoints.restaurants}/${cart_data.rest_id}`.replace(/\/+/g, '/'));
+      setRestaurantName(response.data.name); 
+      } catch (error) {
+      console.error('Error fetching restaurant name:', error);
+      setError('Failed to load restaurant name. Please try again.');
+      }
       console.log('Cart Items:', cart_data.rest_cart);
     } else {
       navigate('/cart');
@@ -101,18 +112,42 @@ const OrderPlacement = () => {
     }
 
     try {
-      const response = await api.post(endpoints.placeOrder, {
+
+      //New
+      const orderItems = cartItems.map(item => ({
+        dish_id: item.dish.id, 
+        quantity: item.quantity
+      }));
+
+      const orderData = {
         delivery_address_id: selectedAddressId,
-        restaurant_id: restId
-      });
+        restaurant_id: restId,
+        items: orderItems
+      };
+
+      //New
+      console.log('Placing Order Data:', orderData); // Log the order data
+      const response = await api.post(endpoints.placeOrder, orderData);
+      //End New
       console.log('Order placed:', response.data);
       alert('Order placed successfully!');
-      // navigate('/order-history');
+      navigate('/order-history');
     } catch (error) {
       console.error('Error placing order:', error);
       setError('Failed to place order. Please try again.');
     }
   };
+
+  //New
+  // Group cart items by restaurant
+  const groupedCartItems = cartItems.reduce((acc, item) => {
+    const { restaurant_id } = item.dish; // Assuming each dish has a restaurant_id
+    if (!acc[restaurant_id]) {
+      acc[restaurant_id] = { restaurantName: restaurantName, items: [] };
+    }
+    acc[restaurant_id].items.push(item);
+    return acc;
+  }, {});
 
   // Calculate total price
   const totalPrice = cartItems.reduce((total, item) => total + (item.dish.price * item.quantity), 0);
@@ -124,12 +159,17 @@ const OrderPlacement = () => {
       <Card className="mb-4">
         <Card.Header as="h5">Cart Items</Card.Header>
         <Card.Body>
-          {cartItems.map(item => (
-            <div key={item.id} className="cart-item">
-              <p>{item.dish.name} - Quantity: {item.quantity}</p>
+        {Object.entries(groupedCartItems).map(([restaurantId, restaurantGroup]) => (
+            <div key={restaurantId} className="restaurant-group">
+              <p className="restaurant-name">{restaurantGroup.restaurantName}</p>
+              {restaurantGroup.items.map(item => (
+                <div key={item.id} className="cart-item">
+                  <p>{item.dish.name} - Quantity: {item.quantity}</p>
+                </div>
+              ))}
             </div>
           ))}
-          <h5 className="mt-3">Total Price: ${totalPrice.toFixed(2)}</h5> {/* Display total price */}
+          <h5 className="mt-3">Total Price: ${totalPrice.toFixed(2)}</h5>
         </Card.Body>
       </Card>
       <Card className="mb-4">

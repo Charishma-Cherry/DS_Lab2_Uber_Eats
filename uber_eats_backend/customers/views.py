@@ -4,14 +4,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-from .models import Customer, Order, FavoriteRestaurant, CartItem, DeliveryAddress, Dish ,Restaurant
-from .serializers import CustomerSerializer, OrderSerializer, FavoriteRestaurantSerializer, CartItemSerializer, DeliveryAddressSerializer
+from .models import Customer, Order, FavoriteRestaurant, CartItem, DeliveryAddress, Dish ,Restaurant,OrderItem
+from .serializers import CustomerSerializer, OrderSerializer, FavoriteRestaurantSerializer, CartItemSerializer, DeliveryAddressSerializer,OrderItemSerializer
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny
+
 
 logger = logging.getLogger(__name__)
 
@@ -126,39 +127,15 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     #permission_classes = [IsAuthenticated]
     permission_classes = [AllowAny] 
-    
+
     def get_queryset(self): 
         user = self.request.user
         if hasattr(user, 'customer'):
-            # If the user is a customer, show only their orders
             return Order.objects.filter(customer=user.customer)
         elif hasattr(user, 'restaurant'):
-            # If the user is a restaurant, show orders placed for their restaurant
             return Order.objects.filter(restaurant=user.restaurant)
         return Order.objects.none()
-    
-    # @action(detail=False, methods=['post'])
-    # def place_order(self, request):
-    #     customer = Customer.objects.get(user=request.user)
-    #     restaurant_id = request.data.get('restaurant_id')
-    #     logger.info(restaurant_id)
 
-    #     cart_items = CartItem.objects.filter(customer=customer).select_related('dish')
-    #     rest_cart_items = cart_items.filter(dish__restaurant=restaurant_id,state ='placing')
-    #     logger.info(rest_cart_items)
-        
-    #     if not rest_cart_items:
-    #         return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     total_price = sum(item.dish.price * item.quantity for item in rest_cart_items)
-    #     order = Order.objects.create(
-    #         customer=customer,
-    #         restaurant=rest_cart_items[0].dish.restaurant,
-    #         total_price=total_price,
-    #         delivery_address=request.data.get('delivery_address')
-    #     )
-
-#@action(detail=False, methods=['post'])
     @action(detail=False, methods=['post'], url_path='place_order')
     def place_order(self, request):
         customer = Customer.objects.get(user=request.user)
@@ -176,46 +153,57 @@ class OrderViewSet(viewsets.ModelViewSet):
             delivery_address=request.data.get('delivery_address')
         )
 
+        # Create OrderItem instances from CartItem
+        order_items = []
+        for item in cart_items:
+            order_item = OrderItem(
+                order=order,
+                dish=item.dish,
+                quantity=item.quantity
+            )
+            order_items.append(order_item)
+        OrderItem.objects.bulk_create(order_items)  # Bulk insert for efficiency
+
         # Link Cart Items to Order and update state
         cart_items.update(order=order, state='placed')
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
-        # Add order items and clear cart
-        # for item in cart_items:
-        #     order.create(dish=item.dish, quantity=item.quantity, price=item.dish.price)
-        # #     item.delete()
-
-        # rest_cart_items.update(order=order.id, state='placed')
-
-        # serializer = self.get_serializer(order)
-        # return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
     @action(detail=False, methods=['get'])
     def getOrderDetail(self, request):
         order_id = request.GET.get('orderId')
-        order = Order.objects.filter(id=order_id)
-        logger.info(order.values())
-
-        if(order) :
-            serializer = OrderSerializer(order, many=True)
+        order = Order.objects.filter(id=order_id).first()
+        if order:
+            serializer = OrderSerializer(order)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response([], status=status.HTTP_200_OK)
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
     
     @action(detail=False, methods=['post'])
     def updateOrderStatus(self, request):
         order_id = request.data.get('orderId')
         order = Order.objects.filter(id=order_id).first()
         status = request.data.get('status')
-        logger.info(status)
         if status in dict(Order.STATUS_CHOICES):
             order.status = status
             order.save()
-            order.refresh_from_db() 
             return Response({'status': 'Order status updated'})
         return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
+    
+   
+@action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='order_history')
+def order_history(self, request):
+        customer = request.user.customer
+        orders = Order.objects.filter(customer=customer).prefetch_related('orderitem_set')
+        
+        order_history_data = []
+        for order in orders:
+            order_data = OrderSerializer(order).data
+            order_items = OrderItem.objects.filter(order=order)
+            order_data['items'] = OrderItemSerializer(order_items, many=True).data
+            order_history_data.append(order_data)
+
+        return Response(order_history_data, status=status.HTTP_200_OK)
 
 class FavoriteRestaurantViewSet(viewsets.ModelViewSet):
     queryset = FavoriteRestaurant.objects.all()
@@ -248,24 +236,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
         cart_items = CartItem.objects.filter(customer=self.request.user.customer, state='placing')
         logger.info(f"Cart items: {cart_items.values()}")
         return cart_items
-        # return CartItem.objects.filter(customer=self.request.user.customer, state='placing')
-
-    # @action(detail=False, methods=['post'])
-    # def add_to_cart(self, request):
-    #     customer = request.user.customer
-    #     dish_id = int(request.data.get('dish_id'))
-
-    #     dish = Dish.objects.get(id=dish_id)
-    #     quantity = request.data.get('quantity', 1)
-    #     cart_item = CartItem.objects.create(
-    #         customer=customer,
-    #         dish=dish,
-    #         quantity=quantity
-    #     )
-
-    #     serializer = self.get_serializer(cart_item)
-    #     return Response(serializer.data)
-
+        
     @action(detail=False, methods=['post'])
     def add_to_cart(self, request):
         customer = request.user.customer
@@ -344,3 +315,4 @@ class DeliveryAddressViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     
+

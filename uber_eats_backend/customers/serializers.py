@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Customer, Order, FavoriteRestaurant, CartItem, DeliveryAddress
+from .models import Customer, Order, FavoriteRestaurant, CartItem, DeliveryAddress,OrderItem
 from restaurants.serializers import RestaurantSerializer, DishSerializer
 from .models import Restaurant, Dish
 
@@ -50,12 +50,20 @@ class DeliveryAddressSerializer(serializers.ModelSerializer):
         fields = ['id', 'address_line1', 'city', 'state', 'postal_code', 'country','is_default']
         read_only_fields = ['id']
 
+# New Chari
+class OrderItemSerializer(serializers.ModelSerializer):  # New serializer for OrderItem
+    dish = DishSerializer(read_only=True)
+
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'dish', 'quantity']
 
 class OrderSerializer(serializers.ModelSerializer):
     delivery_address = DeliveryAddressSerializer(read_only=True)
     total_price = serializers.DecimalField(max_digits=10, decimal_places=2)
     customer = CustomerSerializer(read_only=True)
     restaurant = RestaurantSerializer(read_only=True) #added V
+    items = OrderItemSerializer(many=True, read_only=True) #New Chari
     class Meta:
         model = Order
         fields = '__all__'
@@ -64,18 +72,9 @@ class CartItemSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer(read_only=True)
     dish = DishSerializer(read_only=True)
     order = OrderSerializer(read_only=True)
-
-    # class Meta:
-    #     model = CartItem
-    #     fields = '__all__'
     class Meta:
         model = CartItem
         fields = ['id', 'dish', 'quantity', 'restaurant' , 'customer' , 'order']
-
-# class RestaurantSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Restaurant
-#         fields = ['id', 'name', 'description', 'address', 'phone_number', 'image', 'rating']
 
 class DishSerializer(serializers.ModelSerializer):
     class Meta:
