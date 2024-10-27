@@ -162,6 +162,8 @@ export const AuthProvider = ({ children }) => {
 
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('userType', "customer")
+
       api.defaults.headers.common['Authorization'] = `Token ${token}`;
       setUser(user);
       return true;
@@ -185,10 +187,11 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify({ id: user_id })); // Store only necessary user data
       localStorage.setItem('restaurant_id', restaurant_id); // Store restaurant id if needed
+      localStorage.setItem('userType', "restaurant")
       api.defaults.headers.common['Authorization'] = `Token ${token}`;
       
       setUser({ id: user_id }); // Update state with user ID
-      return true;
+      return restaurant_id;
     } catch (error) {
       console.error('Login error:', error);
       return false;
@@ -198,7 +201,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    localStorage.removeItem('restaurant_id'); // Remove restaurant ID if stored
+    localStorage.removeItem('restaurant_id'); 
+    localStorage.removeItem('userType');
     delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };

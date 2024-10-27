@@ -31,8 +31,9 @@ class RestaurantViewSet(viewsets.ModelViewSet):
         email = request.data.get('email')
         restaurant_name = request.data.get('restaurant_name')
         address = request.data.get('address')
+        phone_number=request.data.get('phone_number')
 
-        if not all([username, password, email, restaurant_name, address]):
+        if not all([username, password, email, restaurant_name, address, phone_number]):
             return Response({'error': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
 
         if User.objects.filter(username=username).exists():
@@ -43,7 +44,8 @@ class RestaurantViewSet(viewsets.ModelViewSet):
 
         try:
             user = User.objects.create_user(username=username, password=password, email=email)
-            restaurant = Restaurant.objects.create(user=user, name=restaurant_name, address=address)
+            restaurant = Restaurant.objects.create(user=user, name=restaurant_name, address=address,
+            phone_number=phone_number)
             token, _ = Token.objects.get_or_create(user=user)
             return Response({
                 'token': token.key,
@@ -61,24 +63,34 @@ class RestaurantViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
 
-    # New
-    @action(detail=False, methods=['get'])
+    @action(detail=True, methods=['get'])
     @permission_classes([IsAuthenticated])
-    def orders(self, request):
-        restaurant = request.user.restaurant.id
-        orders = Order.objects.filter(restaurant=restaurant)  # Filter orders for the logged-in restaurant
-        serializer = OrderSerializer(orders, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def getOrders(self, request, pk=None):
+        try:
+            logger.info(pk)
+            orders = Order.objects.filter(restaurant=pk)
+
+            serializer = OrderSerializer(orders, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Restaurant.DoesNotExist:
+            return Response({'error': 'Restaurant not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Error fetching dishes for restaurant {pk}: {str(e)}")
+            return Response({'error': 'Failed to fetch dishes'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['patch'])
     @permission_classes([IsAuthenticated])
     def update_profile(self, request):
         restaurant = request.user.restaurant
-        serializer = self.get_serializer(restaurant, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        logger.info(request.data)
+
+        for field in ['name', 'address', 'description', 'image', 'phone_number']:
+            if field in request.data:
+                setattr(restaurant, field, request.data[field])
+
+        restaurant.save()
+        serializer = RestaurantSerializer(restaurant)
+        return Response(serializer.data)
     
     @action(detail=False, methods=['post'])
     @permission_classes([IsAuthenticated])
@@ -165,13 +177,24 @@ class DishViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['put'])
     def editDish(self, request):
         dish_id = request.GET.get('dishId')
-        logger.info("dish id" + dish_id)
+        logger.info("Dish ID: " + str(dish_id))
 
-        dish = Dish.objects.filter(id=dish_id)
-        logger.info(dish.values())
+        # Get the dish object or return a 404 if it doesn't exist
+        dish = Dish.objects.filter(id=dish_id).first()
+        logger.info(request.data)
+        
+        # Log current dish data for debugging
+        logger.info("Current Dish Data: " + str(dish))
 
-        if(dish) :
-            serializer = DishSerializer(dish, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response([], status=status.HTTP_200_OK)
+        # Update fields only if they are provided in the request
+        for field in ['name', 'ingredients', 'description', 'price', 'category', 'image',]:
+            if field in request.data:
+                setattr(dish, field, request.data[field])
+
+        # Save the updated dish
+        dish.save()
+        
+        # Serialize and return the updated dish
+        serializer = DishSerializer(dish)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 

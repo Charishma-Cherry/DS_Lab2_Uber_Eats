@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Modal } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Modal, Image } from 'react-bootstrap';
 import api, { endpoints } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import './RestaurantDetails.css';
@@ -17,6 +17,7 @@ function RestaurantDetails() {
   const [restaurantNamesInCart, setRestaurantNamesInCart] = useState(new Set());
   const [cartItems, setCartItems] = useState([]); 
   const [cartCount, setCartCount] = useState(0); 
+  const loggedIn = localStorage.getItem('token') !== null
 
   useEffect(() => {
     const fetchRestaurantAndDishes = async () => {
@@ -35,6 +36,7 @@ function RestaurantDetails() {
                 api.get(`${endpoints.restaurants}${id}/dishes/`)
             ]);
             setRestaurant(restaurantResponse.data);
+            console.log(restaurantResponse.data)
             setDishes(dishesResponse.data);
         } catch (error) {
             console.error('Error fetching restaurant details:', error);
@@ -47,14 +49,14 @@ function RestaurantDetails() {
     fetchRestaurantAndDishes();
 }, [id]);
 
-console.log("Cart Items:", cartItems);
+// console.log("Cart Items:", cartItems);
 
   // Fetch cart items on component mount
   useEffect(() => {
     const fetchCartItems = async () => {
         try {
             const cartResponse = await api.get(endpoints.cartItems);
-            console.log("Fetched Cart Items:", cartResponse.data); 
+            // console.log("Fetched Cart Items:", cartResponse.data); 
             setCartItems(cartResponse.data); // Store cart items
         } catch (error) {
             console.error('Error fetching cart items:', error);
@@ -67,7 +69,7 @@ console.log("Cart Items:", cartItems);
   // Update cart count whenever cartItems changes //New
   useEffect(() => {
     const count = cartItems.length; // Update cart count
-    console.log("Cart Count Updated:", count);
+    // console.log("Cart Count Updated:", count);
     setCartCount(count);
   }, [cartItems]);
 
@@ -100,8 +102,8 @@ const fetchRestaurantNames = async (restaurantIds) => {
         .filter(restId => restId !== undefined) // Filter out undefined values
       );
        const currentRestaurantId = restaurant?.id || 'unknown';
-       console.log("Filtered Restaurant IDs in Cart:", restaurantIdsInCart);
-       console.log("Current Restaurant ID:", currentRestaurantId);
+      //  console.log("Filtered Restaurant IDs in Cart:", restaurantIdsInCart);
+      //  console.log("Current Restaurant ID:", currentRestaurantId);
       
       const namesInCart = new Set(cartItems.map(item => item.dish.restaurant));
       setRestaurantNamesInCart(namesInCart);
@@ -177,31 +179,38 @@ const fetchRestaurantNames = async (restaurantIds) => {
   return (
     <Container className="restaurant-details">
       <h1 className="restaurant-name mb-4">{restaurant.name}</h1>
-      <p className="restaurant-description">{restaurant.description}</p>
       <p><strong>Address:</strong> {restaurant.address}</p>
+      <p><strong>Description:</strong> {restaurant.description}</p>
       <p><strong>Phone:</strong> {restaurant.phone_number}</p>
-      <p><strong>Rating:</strong> {restaurant.rating}</p>
+      {/* <p><strong>Rating:</strong> {restaurant.rating}</p> */}
       <p><strong>Items in Cart:</strong> {cartCount}</p> {/* Display cart count */}
 
       <h2 className="menu-title mt-5 mb-4">Menu</h2>
+      {!loggedIn &&
+          <p>Login to place an order</p>
+      }
       {dishes.length === 0 ? (
         <p>No dishes available for this restaurant.</p>
       ) : (
         <Row>
           {dishes.map(dish => (
             <Col key={dish.id} md={4} className="mb-4">
-              <Card className="dish-card">
-                {dish.image && <Card.Img variant="top" src={dish.image} alt={dish.name} />}
+              <Card className="dish-card" >
+                {dish.image && 
+                <Image className = "dish-image" src={"http://localhost:8000" + dish.image} alt={dish.name} fluid />
+                } 
+                {!dish.image && 
+                <Image className = "dish-image" src={"https://img.freepik.com/free-photo/top-view-delicious-vegetable-salad-inside-plate-grey-background_140725-125661.jpg"} alt={dish.name} fluid />
+                }
                 <Card.Body>
                   <Card.Title className="dish-name">{dish.name}</Card.Title>
+                  <Card.Text className="dish-category">{dish.category}</Card.Text>
+                  <Card.Text className="dish-ingredients">{dish.ingredients}</Card.Text>
                   <Card.Text className="dish-description">{dish.description}</Card.Text>
                   <Card.Text><strong>Price:</strong> ${isNaN(dish.price) ? 'N/A' : Number(dish.price).toFixed(2)}</Card.Text>
-                  <Card.Text className="dietary-restrictions">
-                    {dish.is_vegetarian && <span className="badge bg-success me-1">Vegetarian</span>}
-                    {dish.is_vegan && <span className="badge bg-info me-1">Vegan</span>}
-                    {dish.is_gluten_free && <span className="badge bg-warning">Gluten-Free</span>}
-                  </Card.Text>
+                  {loggedIn &&
                   <Button variant="primary" onClick={() => handleAddToCart(dish.id)}>Add to Cart</Button>
+                  }
                 </Card.Body>
               </Card>
             </Col>

@@ -23,7 +23,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
     # user = UserSerializer(read_only=True)
     class Meta:
         model = Restaurant
-        fields = ['id', 'user', 'name', 'address']
+        fields = '__all__'
 
 # class RestaurantSerializer(serializers.ModelSerializer):
 #     user = UserSerializer()
@@ -49,7 +49,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
 class DishSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dish
-        fields = ['id', 'name', 'description', 'price', 'image', 'is_vegetarian', 'is_vegan', 'is_gluten_free']
+        fields = '__all__'
         extra_kwargs = {
             'image': {'required': False},  # Make image optional if it's not always provided
         }
