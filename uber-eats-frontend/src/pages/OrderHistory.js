@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import api, { endpoints } from '../services/api';
 import './OrderHistory.css';
 
+// Define the OrderHistory functional component
 const OrderHistory = () => {
+   // State variable to hold the list of orders fetched from the API
   const [orders, setOrders] = useState([]);
 
+  // Effect hook to fetch orders when the component mounts
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    fetchOrders(); // Call the function to fetch orders
+  }, []); // Empty dependency array ensures this runs only once on mount
 
+    // Asynchronous function to fetch orders from the API
   const fetchOrders = async () => {
     try {
       const response = await api.get(endpoints.orders);
@@ -19,6 +23,7 @@ const OrderHistory = () => {
     }
   };
 
+    // Render the component's UI
   return (
     <div className="order-history">
       <h1 className="title">Order History</h1>

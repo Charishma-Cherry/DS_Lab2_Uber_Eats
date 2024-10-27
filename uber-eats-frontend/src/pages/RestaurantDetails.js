@@ -21,7 +21,6 @@ function RestaurantDetails() {
 
   useEffect(() => {
     const fetchRestaurantAndDishes = async () => {
-      //New chari
       if (!id) {
         console.error("Restaurant ID is undefined.");
         setError('Restaurant ID not found.');
@@ -48,8 +47,6 @@ function RestaurantDetails() {
 
     fetchRestaurantAndDishes();
 }, [id]);
-
-// console.log("Cart Items:", cartItems);
 
   // Fetch cart items on component mount
   useEffect(() => {
@@ -94,7 +91,6 @@ const fetchRestaurantNames = async (restaurantIds) => {
 };
 
 
-
   const handleAddToCart = async (dishId) => {
     try {
       const restaurantIdsInCart = new Set(cartItems
@@ -102,8 +98,6 @@ const fetchRestaurantNames = async (restaurantIds) => {
         .filter(restId => restId !== undefined) // Filter out undefined values
       );
        const currentRestaurantId = restaurant?.id || 'unknown';
-      //  console.log("Filtered Restaurant IDs in Cart:", restaurantIdsInCart);
-      //  console.log("Current Restaurant ID:", currentRestaurantId);
       
       const namesInCart = new Set(cartItems.map(item => item.dish.restaurant));
       setRestaurantNamesInCart(namesInCart);
@@ -168,12 +162,9 @@ const fetchRestaurantNames = async (restaurantIds) => {
 
   if (loading) return <LoadingSpinner />;
   if (error) return <div className="text-center text-danger">{error}</div>;
-  // if (!restaurant) return <div className="text-center">Restaurant not found</div>;
-
   const existingRestaurantName = Array.from(restaurantNamesInCart).pop() || 'Unknown Restaurant';
 
-  // Debugging render to check for updates
-  // console.log("Rendering RestaurantDetails, Cart Count:", cartCount);
+
   if (!restaurant) return <div className="text-center">Restaurant not found</div>;
 
   return (
@@ -182,6 +173,8 @@ const fetchRestaurantNames = async (restaurantIds) => {
       <p><strong>Address:</strong> {restaurant.address}</p>
       <p><strong>Description:</strong> {restaurant.description}</p>
       <p><strong>Phone:</strong> {restaurant.phone_number}</p>
+      <p><strong>Opening Time:</strong> {restaurant.opening_time}</p>
+      <p><strong>Closing Time:</strong> {restaurant.closing_time}</p>
       {/* <p><strong>Rating:</strong> {restaurant.rating}</p> */}
       <p><strong>Items in Cart:</strong> {cartCount}</p> {/* Display cart count */}
 
@@ -205,7 +198,7 @@ const fetchRestaurantNames = async (restaurantIds) => {
                 <Card.Body>
                   <Card.Title className="dish-name">{dish.name}</Card.Title>
                   <Card.Text className="dish-category">{dish.category}</Card.Text>
-                  <Card.Text className="dish-ingredients">{dish.ingredients}</Card.Text>
+                  <Card.Text className="dish-ingredients" style={{ fontStyle: 'italic' , fontSize: '13px'}}>{dish.ingredients}</Card.Text>
                   <Card.Text className="dish-description">{dish.description}</Card.Text>
                   <Card.Text><strong>Price:</strong> ${isNaN(dish.price) ? 'N/A' : Number(dish.price).toFixed(2)}</Card.Text>
                   {loggedIn &&

@@ -1,56 +1,39 @@
-from rest_framework import serializers
-from django.contrib.auth.models import User
-from .models import Restaurant, Dish
-
-# from customers.models import Order
-# Chari
-
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['id', 'username', 'email', 'password']
-#         extra_kwargs = {'password': {'write_only': True}}
-
-#     def create(self, validated_data):
-#         return User.objects.create_user(**validated_data)
+from rest_framework import serializers  
+from django.contrib.auth.models import User 
+from .models import Restaurant, Dish  
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['id', 'username', 'email']
+        model = User  # Specify the User model to serialize
+        fields = ['id', 'username', 'email']  # Define fields to include in the serialized output
+
 
 class RestaurantSerializer(serializers.ModelSerializer):
-    # user = UserSerializer(read_only=True)
+    # Define custom serializer fields for formatted opening and closing times
+    opening_time = serializers.SerializerMethodField()
+    closing_time = serializers.SerializerMethodField()
+
     class Meta:
-        model = Restaurant
-        fields = '__all__'
+        model = Restaurant  # Specify the Restaurant model to serialize
+        fields = '__all__'  # Include all fields in the serialized output
+   
+    def get_opening_time(self, obj):
+        # Custom method to format the opening_time field
+        if isinstance(obj.opening_time, str):
+            return obj.opening_time  # Return as-is if it's a string
+        return obj.opening_time.strftime('%I:%M %p') if obj.opening_time else None  # Format as 12-hour time if it's a TimeField
 
-# class RestaurantSerializer(serializers.ModelSerializer):
-#     user = UserSerializer()
+    def get_closing_time(self, obj):
+        # Custom method to format the closing_time field
+        if isinstance(obj.closing_time, str):
+            return obj.closing_time  # Return as-is if it's a string
+        return obj.closing_time.strftime('%I:%M %p') if obj.closing_time else None  # Format as 12-hour time if it's a TimeField
 
-#     class Meta:
-#         model = Restaurant
-#         fields = ['id', 'user', 'name', 'description', 'address', 'phone_number', 'image', 'rating', 'opening_time', 'closing_time']
-
-#     def create(self, validated_data):
-#         user_data = validated_data.pop('user')
-#         user = UserSerializer().create(user_data)
-#         restaurant = Restaurant.objects.create(user=user, **validated_data)
-#         return restaurant
-
-#     def update(self, instance, validated_data):
-#         user_data = validated_data.pop('user', None)
-#         if user_data:
-#             user_serializer = UserSerializer(instance.user, data=user_data, partial=True)
-#             if user_serializer.is_valid():
-#                 user_serializer.save()
-#         return super().update(instance, validated_data)
 
 class DishSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Dish
-        fields = '__all__'
+        model = Dish  # Specify the Dish model to serialize
+        fields = '__all__'  # Include all fields in the serialized output
         extra_kwargs = {
-            'image': {'required': False},  # Make image optional if it's not always provided
+            'image': {'required': False},  # Make the image field optional during serialization
         }
-

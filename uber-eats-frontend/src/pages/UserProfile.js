@@ -4,114 +4,128 @@ import api, { endpoints } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Select from 'react-select';
-import './UserProfile.css'; // Import your CSS file
+import './UserProfile.css'; 
 import { useLocation } from 'react-router-dom';
 
 
+// Functional component for user profile management
 function UserProfile() {
-  const { state } = useLocation();
-  const [profile, setProfile] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [updateSuccess, setUpdateSuccess] = useState(false);
-  const [profilePicture, setProfilePicture] = useState(null);
-  const { user } = useContext(AuthContext);
-  const [countries, setCountries] = useState([]);
+  const { state } = useLocation(); // Get state from location to access any passed data
+  const [profile, setProfile] = useState(''); // State to hold user profile data
+  const [loading, setLoading] = useState(true); // State to indicate loading status
+  const [error, setError] = useState(''); // State to hold error messages
+  const [updateSuccess, setUpdateSuccess] = useState(false); // State to indicate successful update
+  const [profilePicture, setProfilePicture] = useState(null); // State to hold selected profile picture
+  const { user } = useContext(AuthContext); // Access user information from AuthContext
+  const [countries, setCountries] = useState([]); // State to hold country list for dropdown
 
+  // Fetch the list of countries on component mount
   useEffect(() => {
     const fetchCountries = async () => {
       const response = await fetch(
         "https://valid.layercode.workers.dev/list/countries?format=select&flags=true&value=code"
       );
-      const result = await response.json();
+      const result = await response.json(); // Parse response as JSON
       console.log(result);
-      setCountries(result.countries);
+      setCountries(result.countries); // Set countries state with fetched data
     };
-    fetchCountries();
+    fetchCountries(); // Call function to fetch countries
   }, []);
-  
+
+  // Fetch user profile data from the API
   const fetchProfile = useCallback(async () => {
-    if (!user) {
-      setLoading(false);
-      return;
+    if (!user) { // Check if user is logged in
+      setLoading(false); // Stop loading if no user
+      return; // Exit function
     }
 
     try {
-      const response = await api.get(endpoints.customerProfile);
+      const response = await api.get(endpoints.customerProfile); // Make API call to fetch profile
       console.log('Fetched profile:', response.data);
-      setProfile({...response.data.customer, email :response.data.email});
+      // Set profile state with user data from response
+      setProfile({ ...response.data.customer, email: response.data.email });
     } catch (err) {
-      console.error('Error fetching profile:', err);
-      setError('Failed to fetch profile. Please try again.');
+      console.error('Error fetching profile:', err); // Log error
+      setError('Failed to fetch profile. Please try again.'); // Set error message
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop loading regardless of success or error
     }
   }, [user]);
 
+  // Call fetchProfile whenever the user changes
   useEffect(() => {
-    fetchProfile();
+    fetchProfile(); // Fetch user profile data
   }, [fetchProfile]);
 
+  // Function to update the user profile
   const updateProfile = async (formData) => {
     try {
       const response = await api.patch(endpoints.updateProfile, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'multipart/form-data', // Set content type for form data
         },
       });
-      return response;
+      return response; // Return response data
     } catch (error) {
-      throw error;
+      throw error; // Throw error to be handled later
     }
   };
-   
+
+  // Handle form submission for updating profile
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setUpdateSuccess(false);
-    setLoading(true);
-  
+    e.preventDefault(); // Prevent default form submission behavior
+    setError(''); // Clear previous error messages
+    setUpdateSuccess(false); // Reset update success state
+    setLoading(true); // Set loading state to true
+
     try {
-      const formData = new FormData();
+      const formData = new FormData(); // Create new FormData object
       Object.keys(profile).forEach(key => {
+        // Append non-null, non-undefined fields to FormData
         if (profile[key] !== null && profile[key] !== undefined) {
           formData.append(key, profile[key]);
         }
       });
-      if (profilePicture) {
-        formData.append('profile_picture', profilePicture);
+      if (profilePicture) { // If a profile picture is selected
+        formData.append('profile_picture', profilePicture); // Append profile picture to FormData
       }
-      const response = await updateProfile(formData);
-      setProfile(response.data);
-      setUpdateSuccess(true);
+      const response = await updateProfile(formData); // Call updateProfile with FormData
+      setProfile(response.data); // Update profile state with response data
+      setUpdateSuccess(true); // Set update success state
     } catch (err) {
-      setError('Failed to update profile. Please try again.');
+      setError('Failed to update profile. Please try again.'); // Set error message on failure
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop loading regardless of success or error
     }
   };
 
+  // Handle change in profile picture input
   const handleProfilePictureChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]; // Get the selected file
     if (file) {
-      setProfilePicture(file);
-      const reader = new FileReader();
+      setProfilePicture(file); // Set the profile picture state
+      const reader = new FileReader(); // Create a FileReader to read the file
       reader.onloadend = () => {
+        // Set profile picture data URL in profile state
         setProfile(prev => ({ ...prev, profile_picture: reader.result }));
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file); // Read the file as a data URL
     }
   };
 
+  // Handle input changes in profile form
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target; // Destructure name and value from event target
+    // Update profile state with the new value
     setProfile(prev => ({ ...prev, [name]: value }));
   };
 
-  if (!user) return <Alert variant="warning">Please log in to view your profile.</Alert>;
-  if (loading) return <LoadingSpinner />;
-  if (error) return <Alert variant="danger">{error}</Alert>;
-  if (!profile) return null;
+  // Conditional rendering based on user authentication and loading states
+  if (!user) return <Alert variant="warning">Please log in to view your profile.</Alert>; // Alert if user is not logged in
+  if (loading) return <LoadingSpinner />; // Show loading spinner while loading data
+  if (error) return <Alert variant="danger">{error}</Alert>; // Show error alert if there's an error
+  if (!profile) return null; // Return null if no profile data is available
+
 
   return (
     <div className="user-profile-wrapper"> {/* Main container for styling */}

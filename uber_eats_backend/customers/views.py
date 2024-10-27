@@ -13,17 +13,19 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny
 
-
+# Set up logging
 logger = logging.getLogger(__name__)
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
+         # Validate the provided data and authenticate the user
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
+         # Create or retrieve the authentication token for the user
         token, created = Token.objects.get_or_create(user=user)
         return Response({
-            'token': token.key,
+            'token': token.key, # Return the token
             'user': {
                 'id': user.id,
                 'username': user.username,

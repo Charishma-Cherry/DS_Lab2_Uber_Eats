@@ -1,5 +1,3 @@
-// src/components/Header.js
-
 import React, { useContext } from 'react';
 import { Navbar, Nav, Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
@@ -8,37 +6,34 @@ import { useNavigate } from 'react-router-dom';
 import './Header.css';
 import { useParams } from 'react-router-dom';
 
-function RestaurantHeader(id) { // Removed cartCount from props
-  const { user, logout } = useContext(AuthContext);
-  const navigate = useNavigate();
+function RestaurantHeader(id) { 
+  const { user, logout } = useContext(AuthContext); // Access user and logout function from AuthContext
+  const navigate = useNavigate(); // Initialize the navigate function for routing
 
+  // Function to handle user logout
   const handleLogout = () => {
-    logout();
-    navigate('/');
+    logout(); // Call the logout function
+    navigate('/'); // Navigate to the home page after logout
   };
-  const dashboardLink = `/restaurant/${id.id}/dashboard`
- 
 
+  const dashboardLink = `/restaurant/${id.id}/dashboard`; // Create the dashboard link based on restaurant ID
 
   return (
-    <Navbar className="custom-navbar" expand="lg">
+    <Navbar className="custom-navbar" expand="lg"> {/* Custom Navbar component with expandable options */}
       <Container>
-        <Navbar.Brand as={Link} to={dashboardLink} className="navbar-brand">Uber Eats</Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ml-auto" style={{ flexGrow: 1 }}>
-            {user ? (
+        <Navbar.Brand as={Link} to={dashboardLink} className="navbar-brand">Uber Eats</Navbar.Brand> {/* Brand logo linking to dashboard */}
+        <Navbar.Toggle aria-controls="basic-navbar-nav" /> {/* Button to toggle navigation on smaller screens */}
+        <Navbar.Collapse id="basic-navbar-nav"> {/* Collapse the navigation links */}
+          <Nav className="ml-auto" style={{ flexGrow: 1 }}> {/* Navigation items aligned to the right */}
+            {user ? ( // Check if user is logged in
               <>
-                {/* <Nav.Link as={Link} to="/restaurants" className="nav-link">Restaurants</Nav.Link> */}
-                {/* <Nav.Link as={Link} to="/favorites" className="nav-link">Favorites</Nav.Link> */}
-                {/* <Nav.Link as={Link} to="/order-history" className="nav-link">Orders</Nav.Link> */}
-                <Nav.Link as={Link} to={dashboardLink} className="nav-link">Dashboard</Nav.Link>
-                <Nav.Link onClick={handleLogout} className="nav-link">Logout</Nav.Link>
+                <Nav.Link as={Link} to={dashboardLink} className="nav-link">Dashboard</Nav.Link> {/* Link to Dashboard for logged-in users */}
+                <Nav.Link onClick={handleLogout} className="nav-link">Logout</Nav.Link> {/* Logout button */}
               </>
-            ) : (
+            ) : ( // If user is not logged in
               <>
-                <Nav.Link as={Link} to="/customer/login" className="nav-link">Login</Nav.Link>
-                <Nav.Link as={Link} to="/signup" className="nav-link">Sign Up</Nav.Link>
+                <Nav.Link as={Link} to="/customer/login" className="nav-link">Login</Nav.Link> {/* Link to Login page */}
+                <Nav.Link as={Link} to="/signup" className="nav-link">Sign Up</Nav.Link> {/* Link to Sign Up page */}
               </>
             )}
           </Nav>
@@ -48,5 +43,4 @@ function RestaurantHeader(id) { // Removed cartCount from props
   );
 }
 
-export default RestaurantHeader;
-
+export default RestaurantHeader; // Export the RestaurantHeader component
