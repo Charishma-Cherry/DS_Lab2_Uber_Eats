@@ -6,47 +6,60 @@ import './Signup.css';
 import { AuthContext } from '../context/AuthContext';
 
 
+// Functional component for user signup
 function Signup() {
+  // Access the login function from AuthContext
   const { login } = useContext(AuthContext);
 
+  // State to hold form data for signup
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    username: '', // Username input
+    email: '', // Email input
+    password: '', // Password input
+    confirmPassword: '', // Confirm password input
   });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
+  const [error, setError] = useState(''); // State to hold any error messages
+  const [loading, setLoading] = useState(false); // State to indicate loading status
+  const navigate = useNavigate(); // Hook to programmatically navigate
+
+  // Function to handle changes in input fields
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value }); // Update formData state with input values
   };
 
+  // Async function to handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+    e.preventDefault(); // Prevent default form submission behavior
+    setError(''); // Clear previous error messages
+    setLoading(true); // Set loading state to true
+
+    // Check if passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
+      setError('Passwords do not match'); // Set error message if passwords do not match
+      setLoading(false); // Reset loading state
+      return; // Exit the function
     }
+
     try {
+      // Send a POST request to the signup endpoint with form data
       await api.post('/customers/signup/', {
         username: formData.username,
         email: formData.email,
         password: formData.password,
       });
+
+      // Log in the user and get success status
       const success = await login(formData.username, formData.password);
 
-      alert("Signup Successful! Please update details in the next page."); // New cherry
-      navigate('/userprofile', { state: { email: formData.email } });
+      alert("Signup Successful! Please update details in the next page."); // Alert user of successful signup
+      navigate('/userprofile', { state: { email: formData.email } }); // Redirect to the user profile page with email as state
     } catch (err) {
+      // Extract error message from response and set error state
       const error = err.response.data.error;
-      setError('Failed to sign up as : ' + error);
+      setError('Failed to sign up as : ' + error); // Set error message
     } finally {
-      setLoading(false);
+      setLoading(false); // Reset loading state
     }
   };
 
@@ -114,3 +127,5 @@ function Signup() {
 }
 
 export default Signup;
+
+

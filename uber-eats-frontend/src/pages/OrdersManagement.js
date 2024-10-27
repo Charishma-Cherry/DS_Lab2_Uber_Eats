@@ -11,89 +11,112 @@ import {
   Divider,
   Typography,
   CircularProgress,
+  Box,
+  Snackbar,
 } from '@mui/material';
 
+// Define the OrdersManagement functional component
 const OrdersManagement = () => {
+  // Get the restaurant ID from the URL parameters
   const { id } = useParams();
-  const [orders, setOrders] = useState({});
+  
+  // State to hold the orders fetched from the API
+  const [orders, setOrders] = useState([]);
+  
+  // State to manage loading state while fetching data
   const [loading, setLoading] = useState(true);
+  
+  // State to hold any error messages encountered during fetching
   const [error, setError] = useState('');
+  
+  // State to manage the selected filter for order status
   const [filterStatus, setFilterStatus] = useState('all');
-  const [selectedStatuses, setSelectedStatuses] = useState(null);
+  
+  // State to manage the selected statuses for each order
+  const [selectedStatuses, setSelectedStatuses] = useState({});
+  
+  // State to hold the success message to be displayed
+  const [successMessage, setSuccessMessage] = useState(''); 
+  
+  // State to manage Snackbar open/close status
+  const [snackbarOpen, setSnackbarOpen] = useState(false); 
 
+  // Effect hook to fetch orders when the component mounts or the restaurant ID changes
   useEffect(() => {
-    fetchOrders();
-  }, [id]);
+    fetchOrders(); // Call the function to fetch orders
+  }, [id]); // Run effect whenever the restaurant ID changes
 
+  // Asynchronous function to fetch orders for the restaurant
   const fetchOrders = async () => {
     try {
+      // Fetch orders using the restaurant ID
       const response = await api.get(`/restaurants/${id}/orders`);
       console.log("Fetching orders for restaurant ID:", id);
-      console.log("API Response:", response.data[2]); // Log the entire response
+      console.log("API Response:", response.data);
 
-      const filteredOrders = response.data
-      setOrders(filteredOrders); // Set only the filtered orders
+      // Set the fetched orders to the state
+      setOrders(response.data); 
+      
+      // Initialize selected statuses for each order
       const initialSelectedStatuses = {};
-      filteredOrders.forEach(order => {
-        initialSelectedStatuses[order.id] = order.status;
+      response.data.forEach(order => {
+        initialSelectedStatuses[order.id] = order.status; // Map order ID to its status
       });
-      setSelectedStatuses(initialSelectedStatuses);
+      setSelectedStatuses(initialSelectedStatuses); // Update selected statuses
     } catch (err) {
+      // Handle error if fetching orders fails
       setError('Failed to fetch orders');
-      console.error('Error fetching orders:', err); // Log the error for debugging
+      console.error('Error fetching orders:', err);
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop loading regardless of success or failure
     }
   };
 
+  // Handle changes to the filter dropdown
   const handleFilterChange = (event) => {
-    setFilterStatus(event.target.value);
+    setFilterStatus(event.target.value); // Update filter status based on selection
   };
 
+  // Handle changes to the status of a specific order
   const handleStatusChange = (orderId, newStatus) => {
-    console.log(`Changing status for order ${orderId} to ${newStatus}`);
-    
     setSelectedStatuses(prevState => ({
       ...prevState,
-      [orderId]: newStatus,
+      [orderId]: newStatus, // Update the selected status for the specified order
     }));
   };
-  
+
+  // Asynchronous function to update the status of a specific order
   const handleUpdateOrderStatus = async (orderId) => {
     try {
-      const newStatus = selectedStatuses[orderId];
-        console.log(newStatus)
-        const response = await api.post(`/orders/updateOrderStatus/`, { status: newStatus, orderId : orderId });
-        console.log('Updated order status:', response.data);
+      const newStatus = selectedStatuses[orderId]; // Get the new status for the order
+      const response = await api.post(`/orders/updateOrderStatus/`, { status: newStatus, orderId: orderId });
+      console.log('Updated order status:', response.data);
+
+      // Show success message and open Snackbar
+      setSuccessMessage('Status updated successfully!');
+      setSnackbarOpen(true); 
     } catch (error) {
+      // Handle error during status update
       console.error('Error updating order status:', error);
       alert('Failed to update order status. Please try again.');
     }
   };
-  // const handleUpdateOrderStatus = async (orderId) => {
-  //   const newStatus = selectedStatuses[orderId];
-  //   console.log(`Updating order ${orderId} status to ${newStatus}`);
-    
-  //   try {
-  //     await api.post(`orders/updateOrderStatus/${orderId}/`, { status: newStatus });
-  //     console.log('API call successful, updating orders state.');
 
-  //     setOrders(prevOrders => prevOrders.map(order => 
-  //       order.id === orderId ? { ...order, status: newStatus } : order
-  //     ));
+  // Handle closing of the Snackbar
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false); // Close Snackbar
+  };
 
-  //     alert('Order status updated successfully');
-  //   } catch (err) {
-  //     setError('Failed to update order status');
-  //     console.error('Error updating order status:', err);
-  //   }
-  // };
-
+  // Filter orders based on the selected filter status
   const filteredOrders = filterStatus === 'all' ? orders : orders.filter(order => order.status === filterStatus);
 
+  // Show loading spinner while fetching data
   if (loading) return <CircularProgress />;
+  
+  // Show error message if there was an error
   if (error) return <Typography color="error">{error}</Typography>;
 
+  // Render the component's UI
   return (
     <Container>
       <Typography variant="h4" gutterBottom>
@@ -107,30 +130,36 @@ const OrdersManagement = () => {
         <MenuItem value="cancelled">Cancelled</MenuItem>
       </Select>
 
-      <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+      <List sx={{ width: '100%', bgcolor: 'background.paper', borderRadius: 1, boxShadow: 1 }}>
         {filteredOrders.length === 0 ? (
           <Typography>No orders found.</Typography>
         ) : (
           filteredOrders.map(order => (
-            <ListItem key={order.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-evenly' }}>
-              <Typography>Order #{order.id}</Typography>
-              <Divider orientation="vertical" flexItem />
-              <Typography >Status: {order.status.toUpperCase()}</Typography>
-              <Select
-                value={selectedStatuses[order.id]}
-                onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                sx={{ width: '150px' }}
-              >
-                <MenuItem value="new">New</MenuItem>
-                <MenuItem value="preparing">Preparing</MenuItem>
-                <MenuItem value="on_the_way">On the Way</MenuItem>
-                <MenuItem value="pickup_ready">Pick Up Ready</MenuItem>
-                <MenuItem value="delivered">Delivered</MenuItem>
-                <MenuItem value="picked_up">Picked Up</MenuItem>
-              </Select>
-              <Button onClick={() => handleUpdateOrderStatus(order.id)}>Update Status</Button>
+            <ListItem key={order.id} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', p: 2 }}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6">Order #{order.id}</Typography>
+                <Typography>Status: {order.status.toUpperCase()}</Typography>
+                <Select
+                  value={selectedStatuses[order.id]}
+                  onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                  sx={{ width: '150px', marginTop: 1 }}
+                >
+                  <MenuItem value="new">New</MenuItem>
+                  <MenuItem value="preparing">Preparing</MenuItem>
+                  <MenuItem value="on_the_way">On the Way</MenuItem>
+                  <MenuItem value="pickup_ready">Pick Up Ready</MenuItem>
+                  <MenuItem value="delivered">Delivered</MenuItem>
+                  <MenuItem value="picked_up">Picked Up</MenuItem>
+                </Select>
+                {/* Add margin to the Button for spacing */}
+                <Button variant="contained" color="primary" onClick={() => handleUpdateOrderStatus(order.id)} sx={{ marginTop: 2, marginLeft: 1 }}>
+                  Update Status
+                </Button>
+              </Box>
 
-              <div style={{ marginLeft: '20px' }}>
+              <Divider orientation="vertical" flexItem sx={{ marginX: 2 }} />
+
+              <Box sx={{ flex: 2 }}>
                 <Typography variant="body1"><strong>Name:</strong> {order.customer.name}</Typography>
                 <Typography variant="body1"><strong>Email:</strong> {order.customer.email}</Typography>
                 <Typography variant="body1"><strong>Phone:</strong> {order.customer.phone_number}</Typography>
@@ -138,15 +167,21 @@ const OrdersManagement = () => {
                 <Typography variant="body1"><strong>City:</strong> {order.delivery_address.city}</Typography>
                 <Typography variant="body1"><strong>State:</strong> {order.delivery_address.state}</Typography>
                 <Typography variant="body1"><strong>Country:</strong> {order.delivery_address.country}</Typography>
-              </div>
+              </Box>
             </ListItem>
           ))
         )}
       </List>
+
+      {/* Snackbar for displaying success messages */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={5000} // Auto hide 
+        onClose={handleSnackbarClose}
+        message={successMessage}
+      />
     </Container>
   );
 };
 
 export default OrdersManagement;
-
-

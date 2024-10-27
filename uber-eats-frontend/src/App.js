@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
 import { AuthProvider } from './context/AuthContext';
-import { useCart, CartProvider } from './context/CartContext'; // Import useCart and CartProvider
+import { useCart, CartProvider } from './context/CartContext'; 
 import Header from './components/Header';
 import CustomerLogin from './pages/CustomerLogin';
 import RestaurantLogin from './pages/RestaurantLogin';
@@ -10,9 +10,8 @@ import Signup from './pages/Signup';
 import RestaurantList from './pages/RestaurantList';
 import RestaurantDetails from './pages/RestaurantDetails';
 import RestaurantDashboard from './pages/RestaurantDashboard';
-import ProfileManagement from './pages/ProfileManagement'; // Create this component
-import OrdersManagement from './pages/OrdersManagement'; // Create this component
-// import CustomerProfile from './pages/CustomerProfile';
+import ProfileManagement from './pages/ProfileManagement'; 
+import OrdersManagement from './pages/OrdersManagement'; 
 import UserProfile from './pages/UserProfile';
 import Cart from './pages/Cart';
 import OrderHistory from './pages/OrderHistory';

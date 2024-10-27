@@ -1,44 +1,52 @@
-// src/pages/RestaurantMenu.js
+import React, { useEffect, useState, useContext } from 'react';
+import { useParams } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext'; 
 
+
+// Functional component for displaying a restaurant's menu
 const RestaurantMenu = () => {
-  const [restaurant, setRestaurant] = useState(null);
-  const [menu, setMenu] = useState([]);
-  const [selectedDish, setSelectedDish] = useState(null);
-  const { id } = useParams();
-  const { user } = useContext(AuthContext);
-  const { addToCart } = useCart(); // Use the CartContext to add items to cart
+  const [restaurant, setRestaurant] = useState(null); // State to hold the restaurant details
+  const [menu, setMenu] = useState([]); // State to hold the menu items (dishes)
+  const [selectedDish, setSelectedDish] = useState(null); // State to hold the currently selected dish
+  const { id } = useParams(); // Extract restaurant ID from URL parameters
+  const { user } = useContext(AuthContext); // Access the current user from AuthContext
+  const { addToCart } = useCart(); // Use the CartContext to access the addToCart function
 
+  // useEffect hook to fetch restaurant and menu data when the component mounts or the ID changes
   useEffect(() => {
     fetchRestaurantAndMenu();
   }, [id]);
 
+  // Async function to fetch restaurant details and menu items
   const fetchRestaurantAndMenu = async () => {
     try {
-      const restaurantResponse = await api.get(`/restaurants/${id}/`);
-      setRestaurant(restaurantResponse.data);
-      const menuResponse = await api.get(`/restaurants/${id}/dishes/`);
-      setMenu(menuResponse.data);
+      const restaurantResponse = await api.get(`/restaurants/${id}/`); // Fetch restaurant details
+      setRestaurant(restaurantResponse.data); // Set restaurant state with fetched data
+      const menuResponse = await api.get(`/restaurants/${id}/dishes/`); // Fetch the menu items for the restaurant
+      setMenu(menuResponse.data); // Set menu state with fetched dishes
     } catch (error) {
-      console.error('Error fetching restaurant and menu:', error);
+      console.error('Error fetching restaurant and menu:', error); // Log error if fetching fails
     }
   };
 
+  // Function to handle adding a dish to the cart
   const handleAddToCart = (dish) => {
     if (!user) {
-      alert('Please log in to add items to your cart');
-      return;
+      alert('Please log in to add items to your cart'); // Alert user to log in if not authenticated
+      return; // Exit the function if user is not logged in
     }
 
     try {
-      addToCart(dish); // This will update the cart globally
-      alert('Item added to cart successfully!');
+      addToCart(dish); // Call addToCart function to add the dish to the cart
+      alert('Item added to cart successfully!'); // Alert user of successful addition
     } catch (error) {
-      console.error('Error adding item to cart:', error);
-      alert('Failed to add item to cart. Please try again.');
+      console.error('Error adding item to cart:', error); // Log error if adding fails
+      alert('Failed to add item to cart. Please try again.'); // Alert user of failure
     }
   };
 
-  if (!restaurant) return <div>Loading...</div>;
+  // Render loading state while restaurant data is being fetched
+  if (!restaurant) return <div>Loading...</div>; // Show loading message if restaurant data is not yet available
 
   return (
     <div className="restaurant-menu">

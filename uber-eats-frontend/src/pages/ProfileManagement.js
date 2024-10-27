@@ -1,262 +1,8 @@
-// import React, { useEffect, useState } from 'react';
-// import { Form, Button, Alert, ListGroup } from 'react-bootstrap';
-// import api from '../services/api';
-
-// function ProfileManagement() {
-//     const [profileData, setProfileData] = useState({});
-//     const [dishes, setDishes] = useState([]);
-//     const [error, setError] = useState('');
-//     const [dishFormData, setDishFormData] = useState({
-//         name: '',
-//         ingredients: '',
-//         description: '',
-//         price: '',
-//         image: null,
-//     });
-
-//     // Fetch profile data on component mount
-//     useEffect(() => {
-//         const fetchProfileData = async () => {
-//             try {
-//                 const response = await api.get('/restaurants/dashboard/', {
-//                     headers: { Authorization: `Token ${localStorage.getItem('token')}` }
-//                 });
-//                 setProfileData(response.data);
-//             } catch (err) {
-//                 setError('Failed to fetch profile data.');
-//                 console.error(err);
-//             }
-//         };
-
-//         fetchProfileData();
-//     }, []); // Only run once on mount
-
-//     // Fetch dishes when profileData.id changes
-//     useEffect(() => {
-//         const fetchDishes = async () => {
-//             if (profileData.id) {  // Ensure profileData.id is available
-//                 try {
-//                     const response = await api.get(`/restaurants/${profileData.id}/dishes/`, {
-//                         headers: { Authorization: `Token ${localStorage.getItem('token')}` }
-//                     });
-//                     setDishes(response.data);
-//                 } catch (err) {
-//                     setError('Failed to fetch dishes.');
-//                     console.error(err);
-//                 }
-//             }
-//         };
-
-//         fetchDishes();
-//     }, [profileData.id]); // Runs whenever profileData.id changes
-
-    
-// //   const fetchDishes = async () => {
-// //     try {
-// //       const response = await api.get('/dishes/');
-// //       setDishes(response.data);
-// //     } catch (err) {
-// //       console.error('Error fetching dishes:', err);
-// //     }
-// //   };
-
-//     // Handle profile data change
-//     const handleProfileChange = (e) => {
-//         const { name, value } = e.target;
-//         setProfileData({ ...profileData, [name]: value });
-//     };
-
-//     // Handle dish form data change
-//     const handleDishChange = (e) => {
-//         const { name, value } = e.target;
-//         setDishFormData({ ...dishFormData, [name]: value });
-//     };
-
-//     // Submit profile update
-//     const handleProfileSubmit = async (e) => {
-//         e.preventDefault();
-//         try {
-//             await api.patch('/restaurants/update_profile/', profileData, {
-//                 headers: { Authorization: `Token ${localStorage.getItem('token')}` }
-//             });
-//             alert('Profile updated successfully!');
-//         } catch (err) {
-//             setError('Failed to update profile.');
-//             console.error(err);
-//         }
-//     };
-
-//     // Submit dish addition
-//     const handleAddDish = async (e) => {
-//         e.preventDefault();
-        
-//         const formDataToSend = new FormData();
-        
-//         formDataToSend.append('name', dishFormData.name);
-//         formDataToSend.append('ingredients', dishFormData.ingredients);
-//         formDataToSend.append('description', dishFormData.description);
-//         formDataToSend.append('price', dishFormData.price);
-        
-//         if (dishFormData.image) {
-//             formDataToSend.append('image', dishFormData.image);
-//         }
-
-//         try {
-//             await api.post('/restaurants/add_dish/', formDataToSend, {
-//                 headers: { Authorization: `Token ${localStorage.getItem('token')}` }
-//             });
-//             alert('Dish added successfully!');
-//             // Optionally refresh dish list here
-//             setDishes([...dishes, dishFormData]); // Update local state with new dish
-//             setDishFormData({ name: '', ingredients: '',description: '', price: '', image: null }); // Reset form
-//         } catch (err) {
-//             setError('Failed to add dish.');
-//             console.error(err.response.data); // Log the error response for debugging
-//         }
-//     };
-
-//     if (error) return <Alert variant="danger">{error}</Alert>;
-
-//     return (
-//         <div>
-//             <h2>Restaurant Profile</h2>
-//             <Form onSubmit={handleProfileSubmit}>
-//                 <Form.Group controlId="formBasicName">
-//                     <Form.Label>Restaurant Name</Form.Label>
-//                     <Form.Control
-//                         type="text"
-//                         name="name"
-//                         value={profileData.name || ''}
-//                         onChange={handleProfileChange}
-//                         required
-//                     />
-//                 </Form.Group>
-
-//                 <Form.Group controlId="formBasicAddress">
-//                     <Form.Label>Ingredients</Form.Label>
-//                     <Form.Control
-//                         type="text"
-//                         name="address"
-//                         value={profileData.address || ''}
-//                         onChange={handleProfileChange}
-//                         required
-//                     />
-//                 </Form.Group>
-
-//                 <Form.Group controlId="formBasicAddress">
-//                     <Form.Label>Address</Form.Label>
-//                     <Form.Control
-//                         type="text"
-//                         name="address"
-//                         value={profileData.address || ''}
-//                         onChange={handleProfileChange}
-//                         required
-//                     />
-//                 </Form.Group>
-
-//                 <Form.Group controlId="formBasicDescription">
-//                     <Form.Label>Description</Form.Label>
-//                     <Form.Control
-//                         type="text"
-//                         name="description"
-//                         value={profileData.description || ''}
-//                         onChange={handleProfileChange}
-//                         required
-//                     />
-//                 </Form.Group>
-
-//                 {/* Add more fields as necessary */}
-
-//                 <Button variant="primary" type="submit">
-//                     Update Profile
-//                 </Button>
-//             </Form>
-
-//             <h2>Your Dishes</h2>
-//             {dishes.length === 0 ? (
-//                 <p>No dishes found.</p>
-//             ) : (
-//                 <ListGroup>
-//                     {dishes.map(dish => (
-//                         <ListGroup.Item key={dish.id}>
-//                             {dish.name} - ${dish.price}
-//                             {/* Add options to edit or delete */}
-//                         </ListGroup.Item>
-//                     ))}
-//                 </ListGroup>
-//             )}
-
-//             {/* Add form for adding new dishes */}
-//             <h3>Add New Dish</h3>
-//             <Form onSubmit={handleAddDish}>
-//                 <Form.Group controlId="formDishName">
-//                     <Form.Label>Dish Name</Form.Label>
-//                     <Form.Control
-//                         type="text"
-//                         name="name"
-//                         value={dishFormData.name}
-//                         onChange={handleDishChange}
-//                         required
-//                     />
-//             </Form.Group>
-
-//             <Form onSubmit={handleAddDish}>
-//                 <Form.Group controlId="formDishName">
-//                     <Form.Label>Ingredients</Form.Label>
-//                     <Form.Control
-//                         type="text"
-//                         name="name"
-//                         value={dishFormData.ingredients}
-//                         onChange={handleDishChange}
-//                         required
-//                     />
-//             </Form.Group>
-
-//                 <Form.Group controlId="formDishDescription">
-//                     <Form.Label>Description</Form.Label>
-//                     <Form.Control
-//                         type="text"
-//                         name="description"
-//                         value={dishFormData.description}
-//                         onChange={handleDishChange}
-//                         required
-//                     />
-//                 </Form.Group>
-
-//                 <Form.Group controlId="formDishPrice">
-//                     <Form.Label>Price</Form.Label>
-//                     <Form.Control
-//                         type="number"
-//                         name="price"
-//                         value={dishFormData.price}
-//                         onChange={handleDishChange}
-//                         required
-//                     />
-//                 </Form.Group>
-
-//                 <Form.Group controlId="formDishImage">
-//                     <Form.Label>Image</Form.Label>
-//                     <Form.Control 
-//                         type="file" 
-//                         accept="image/*" 
-//                         onChange={(e) => setDishFormData({ ...dishFormData, image: e.target.files[0] })} 
-//                     />
-//                 </Form.Group>
-
-//                 <Button variant="primary" type="submit">
-//                     Add Dish
-//                 </Button>
-//             </Form>
-//         </div>
-//     );
-// }
-
-// export default ProfileManagement;
-
 import React, { useEffect, useState } from 'react';
 import { Form, Button, Alert, ListGroup, Image } from 'react-bootstrap';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
+
 
 function ProfileManagement() {
     const [profileData, setProfileData] = useState({});
@@ -269,11 +15,29 @@ function ProfileManagement() {
         price: '',
         category: '',
         phone_number: '',
+        opening_time: '', 
+        closing_time: '', 
         image: null
     });
     const [profilePicture, setProfilePicture] = useState(null);
 
     const navigate = useNavigate();
+
+    // Utility function to convert time to 24-hour format
+const convertTo24HourFormat = (timeString) => {
+    if (!timeString) return '';
+    const [time, modifier] = timeString.split(' ');
+    let [hours, minutes] = time.split(':');
+
+    if (modifier === 'PM' && hours !== '12') {
+        hours = String(parseInt(hours, 10) + 12);
+    }
+    if (modifier === 'AM' && hours === '12') {
+        hours = '00';
+    }
+
+    return `${hours}:${minutes}`;
+};
 
     // Fetch profile data on component mount
     useEffect(() => {
@@ -283,6 +47,11 @@ function ProfileManagement() {
                     headers: { Authorization: `Token ${localStorage.getItem('token')}` }
                 });
                 setProfileData(response.data);
+                setProfileData({
+                    ...response.data,
+                    opening_time: convertTo24HourFormat(response.data.opening_time) || '',
+                    closing_time: convertTo24HourFormat(response.data.closing_time) || ''
+                });
                 setProfilePicture(response.data.image)
                 console.log(response.data)
             } catch (err) {
@@ -316,6 +85,8 @@ function ProfileManagement() {
     // Handle profile data change
     const handleProfileChange = (e) => {
         const { name, value } = e.target;
+        // Convert time values to 24-hour format if they're opening_time or closing_time
+        const newValue = (name === 'opening_time' || name === 'closing_time') ? convertTo24HourFormat(value) : value;
         setProfileData({ ...profileData, [name]: value });
     };
 
@@ -333,6 +104,8 @@ function ProfileManagement() {
         formDataToSend.append('address', profileData.address);
         formDataToSend.append('description', profileData.description);
         formDataToSend.append('phone_number', profileData.phone_number);
+        formDataToSend.append('opening_time', profileData.opening_time || '');
+        formDataToSend.append('closing_time', profileData.closing_time || '');
         
         if (profilePicture) {
             formDataToSend.append('image', profilePicture);
@@ -443,6 +216,28 @@ function ProfileManagement() {
                         required
                     />
                 </Form.Group>
+
+                <Form.Group controlId="formBasicOpeningTime">
+                    <Form.Label>Opening Time</Form.Label>
+                    <Form.Control
+                         type="time"
+                         name="opening_time"
+                         value={profileData.opening_time || ''}
+                         onChange={handleProfileChange} 
+                        required
+                    />
+                </Form.Group>
+
+                <Form.Group controlId="formBasicClosingTime">
+                    <Form.Label>Closing Time</Form.Label>
+                    <Form.Control
+                        type="time"
+                        name="closing_time"
+                        value={profileData.closing_time || ''}
+                        onChange={handleProfileChange}
+                        required
+                     />
+                    </Form.Group>
 
                 <Image style={{maxHeight : '300px', width : 'auto'}} src={"http://localhost:8000" + profilePicture || 'default-avatar.png'} fluid />
                 <Form.Group controlId="formProfilePicture" className="mt-2" >
@@ -558,3 +353,5 @@ function ProfileManagement() {
 }
 
 export default ProfileManagement;
+
+

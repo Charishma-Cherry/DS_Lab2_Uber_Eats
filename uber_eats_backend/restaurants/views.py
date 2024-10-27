@@ -84,7 +84,7 @@ class RestaurantViewSet(viewsets.ModelViewSet):
         restaurant = request.user.restaurant
         logger.info(request.data)
 
-        for field in ['name', 'address', 'description', 'image', 'phone_number']:
+        for field in ['name', 'address', 'description', 'image', 'phone_number','opening_time','closing_time']:
             if field in request.data:
                 setattr(restaurant, field, request.data[field])
 
