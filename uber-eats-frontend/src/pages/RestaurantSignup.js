@@ -241,11 +241,12 @@
 
 // export default RestaurantSignup;
 
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import './Signup.css';
+import { AuthContext } from '../context/AuthContext';
 
 function RestaurantSignup() {
   const [formData, setFormData] = useState({
@@ -255,7 +256,10 @@ function RestaurantSignup() {
     confirmPassword: '',
     restaurantName: '',
     address: '',
+    phone_number: '',
   });
+  const { loginRestaurant } = useContext(AuthContext);
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -282,9 +286,12 @@ function RestaurantSignup() {
         password: formData.password,
         restaurant_name: formData.restaurantName,
         address: formData.address,
+        phone_number: formData.phone_number
       });
       alert("Restaurant Signup Successful!");
-      navigate('/restaurant/login');
+      const restId = await loginRestaurant(formData.username, formData.password);
+
+      navigate(`/restaurant/${restId}/dashboard`);
     } catch (err) {
       const error = err.response?.data?.error || 'Failed to sign up';
       setError('Failed to sign up: ' + error);
@@ -366,6 +373,18 @@ function RestaurantSignup() {
               name="address"
               placeholder="Enter restaurant address"
               value={formData.address}
+              onChange={handleChange}
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3" controlId="formBasicPhoneNumber">
+            <Form.Label>Phone Number</Form.Label>
+            <Form.Control
+              type="number"
+              name="phone_number"
+              placeholder="Enter restaurant phone number"
+              value={formData.phone_number}
               onChange={handleChange}
               required
             />

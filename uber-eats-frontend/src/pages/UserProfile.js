@@ -5,9 +5,12 @@ import { AuthContext } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Select from 'react-select';
 import './UserProfile.css'; // Import your CSS file
+import { useLocation } from 'react-router-dom';
+
 
 function UserProfile() {
-  const [profile, setProfile] = useState(null);
+  const { state } = useLocation();
+  const [profile, setProfile] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updateSuccess, setUpdateSuccess] = useState(false);
@@ -36,7 +39,7 @@ function UserProfile() {
     try {
       const response = await api.get(endpoints.customerProfile);
       console.log('Fetched profile:', response.data);
-      setProfile(response.data);
+      setProfile({...response.data.customer, email :response.data.email});
     } catch (err) {
       console.error('Error fetching profile:', err);
       setError('Failed to fetch profile. Please try again.');

@@ -25,6 +25,7 @@ function RestaurantList() {
   const fetchRestaurants = async () => {
     try {
       const response = await api.get(endpoints.restaurants);
+      console.log(response.data)
       setRestaurants(response.data);
     } catch (err) {
       setError('Failed to fetch restaurants. Please try again later.');

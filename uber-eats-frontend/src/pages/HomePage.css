@@ -1,6 +1,8 @@
+/* HomePage.css */
+
 .homepage-wrapper {
   height: 100vh;
-  background-image: url('../assets/images/bg.jpg');  /* Correct path to your image */
+  background-image: url('../assets/images/bg.jpg');
   background-size: cover;
   background-position: center;
   position: relative;
@@ -12,7 +14,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);  /* Adjust overlay color for visibility */
+  background-color: rgba(0, 0, 0, 0.6);
 }
 
 .homepage-content {
@@ -20,34 +22,36 @@
   top: 50%;
   transform: translateY(-50%);
   color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  padding: 20px;
+}
+
+.homepage-content h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.homepage-content p {
+  font-size: 1.3rem;
+  margin-bottom: 30px;
 }
 
 .homepage-btn {
   margin: 10px;
-  padding: 10px 20px;
-  font-size: 1.2rem;
-  border-radius: 25px; /* Rounded button edges */
-  transition: background-color 0.3s ease; /* Smooth hover transition */
-}
-
-.homepage-btn:first-child {
-  background-color: #28a745;  /* Green for "Explore Restaurants" */
-  border: none;
-  color: white;
-}
-
-.homepage-btn:first-child:hover {
-  background-color: #218838;  /* Darker green on hover */
-}
-
-.homepage-btn:nth-child(2), .homepage-btn:nth-child(3) {
-  background-color: transparent;  /* Transparent background for Sign Up and Login */
-  border: 2px solid white;
-  color: white;
-}
-
-.homepage-btn:nth-child(2):hover, .homepage-btn:nth-child(3):hover {
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 30px;
+  transition: all 0.3s ease;
   background-color: white;
-  color: #000;  /* Black text on hover */
-  border: 2px solid #000;  /* Black border on hover */
+  color: #333; /* Dark gray text for contrast */
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.homepage-btn:hover {
+  background-color: #f8f8f8; /* Slightly off-white on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }

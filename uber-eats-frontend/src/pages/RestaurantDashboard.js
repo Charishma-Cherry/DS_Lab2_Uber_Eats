@@ -20,7 +20,7 @@ function RestaurantDashboard() {
 
   return (
     <Container>
-      <h1>Restaurant Dashboard</h1>
+      <h1>Dashboard</h1>
       <div className="button-group">
         <Button variant="primary" onClick={handleProfileManagement}>
           Profile Management

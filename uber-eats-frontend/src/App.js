@@ -25,22 +25,38 @@ import FavoriteRestaurants from './pages/FavoriteRestaurants';
 import OrderDetail from './pages/OrderDetail';
 import Dish from './pages/Dish';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import RestaurantHeader from './components/RestaurantHeader';
+import DefaultHeader from './components/DefaultHeader';
 
 
 function AppContent() {
   const location = useLocation();
   const { cartCount } = useCart(); // Get cartCount from CartContext
+  const getHeader = () => {
+    const userType = localStorage.getItem('userType')
+    const loggedIn = localStorage.getItem('token')
 
+    if(loggedIn){
+    if(location.pathname !== '/' && userType === 'restaurant') {
+      return <RestaurantHeader id={localStorage.getItem('restaurant_id')}/>
+    } else if(location.pathname !== '/' && userType === 'customer') {
+      return <Header cartCount={cartCount} />
+    }
+  } else if(location.pathname !== '/' ){
+    return <DefaultHeader/>
+  }
+    
+  }
   return (
     <>
-      {location.pathname !== '/' && <Header cartCount={cartCount} />} {/* Pass cartCount to Header */}
+      {getHeader()}
       <Container className="mt-4">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/user/home" element={<RestaurantList />} />
           <Route path="/restaurant/:id/dashboard" element={<RestaurantDashboard />} />
           <Route path="/restaurant/profile" element={<ProfileManagement />} />
-          <Route path="/restaurant/:restaurantId/orders" element={<OrdersManagement />} />
+          <Route path="/restaurant/:id/orders" element={<OrdersManagement />} />
           <Route path="/customer/login" element={<CustomerLogin />} />
           <Route path="/restaurant/login" element={<RestaurantLogin />} />
           <Route path="/order-details/:id" element={<OrderDetail />} />

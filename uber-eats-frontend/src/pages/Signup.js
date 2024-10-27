@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import './Signup.css'; 
+import { AuthContext } from '../context/AuthContext';
+
 
 function Signup() {
+  const { login } = useContext(AuthContext);
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -34,8 +38,10 @@ function Signup() {
         email: formData.email,
         password: formData.password,
       });
-      alert("Signup Successful!"); // New cherry
-      navigate('/customer/login');
+      const success = await login(formData.username, formData.password);
+
+      alert("Signup Successful! Please update details in the next page."); // New cherry
+      navigate('/userprofile', { state: { email: formData.email } });
     } catch (err) {
       const error = err.response.data.error;
       setError('Failed to sign up as : ' + error);

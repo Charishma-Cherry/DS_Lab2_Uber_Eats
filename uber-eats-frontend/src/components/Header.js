@@ -17,22 +17,22 @@ function Header() { // Removed cartCount from props
   const cartCount = Array.from(cartItems.values()).reduce((total, rest_cart) => total + rest_cart.length, 0); // Calculate count
   const handleLogout = () => {
     logout();
-    navigate('/customer/login');
+    navigate('/');
   };
 
   return (
     <Navbar className="custom-navbar" expand="lg">
       <Container>
-        <Navbar.Brand as={Link} to="/" className="navbar-brand">Uber Eats</Navbar.Brand>
+        <Navbar.Brand as={Link} to="/user/home" className="navbar-brand">Uber Eats</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ml-auto" style={{ flexGrow: 1 }}>
             {user ? (
               <>
+                <Nav.Link as={Link} to="/userprofile" className="nav-link">Welcome, {user.user.username}</Nav.Link>
                 <Nav.Link as={Link} to="/restaurants" className="nav-link">Restaurants</Nav.Link>
                 <Nav.Link as={Link} to="/favorites" className="nav-link">Favorites</Nav.Link>
                 <Nav.Link as={Link} to="/order-history" className="nav-link">Order History</Nav.Link>
-                <Nav.Link as={Link} to="/userprofile" className="nav-link">Welcome, {user.user.username}</Nav.Link>
                 <Nav.Link onClick={handleLogout} className="nav-link">Logout</Nav.Link>
               </>
             ) : (

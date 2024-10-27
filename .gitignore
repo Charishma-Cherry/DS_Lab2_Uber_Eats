@@ -3,3 +3,6 @@
 /uber-eats-frontend/node_modules
 /uber_eats_backend/lib/*
 *.pyc
+/uber_eats_backend/media/
+
+/uber_eats_backend/media/dish_images

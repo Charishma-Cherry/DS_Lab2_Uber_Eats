@@ -27,6 +27,11 @@
     transition: transform 0.2s; /* Animation on hover */
 }
 
+.dish-image {
+    max-height: 200px;
+    width: auto;
+    
+}
 .dish-card:hover {
     transform: scale(1.03); /* Slightly scale up on hover */
 }

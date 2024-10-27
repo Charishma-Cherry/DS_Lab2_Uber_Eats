@@ -39,7 +39,7 @@ class Restaurant(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     address = models.CharField(max_length=255, null=True, blank=True)
-    phone_number = models.CharField(max_length=20, null=True, blank=True)
+    phone_number = models.DecimalField(max_digits=12, decimal_places=0, default='')
     image = models.ImageField(upload_to='restaurant_images/', null=True, blank=True)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
     opening_time = models.TimeField(null=True, blank=True)
@@ -52,9 +52,18 @@ class Restaurant(models.Model):
 class Dish(models.Model):
     restaurant = models.ForeignKey(Restaurant, related_name='dishes', on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
+    ingredients=models.CharField(max_length=150,null=True)
     description = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
     image = models.ImageField(upload_to='dish_images/', null=True, blank=True)
+    categories= [
+        ('Appetizer', 'Appetizer'),
+        ('Salad', 'Salad'),
+        ('Main Course', 'Main Course'),
+        ('Desert', 'Desert'),
+        ('Beverage', 'Beverage'),
+    ]
+    category = models.CharField(max_length=20,choices=categories, default='')
     is_vegetarian = models.BooleanField(default=False)
     is_vegan = models.BooleanField(default=False)
     is_gluten_free = models.BooleanField(default=False)

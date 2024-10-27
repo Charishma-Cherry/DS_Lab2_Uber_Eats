@@ -10,22 +10,19 @@ const SignupSelection = () => {
     <Container className="d-flex flex-column align-items-center justify-content-center mt-5">
       <h2>Hey! Are you new here?</h2>
       <Button
-        variant="primary"
-        className="mt-3"
+        className="signup-btn mt-3"
         onClick={() => navigate('/signup')}  // Navigate to User Signup
       >
         User Signup
       </Button>
       <Button
-        variant="secondary"
-        className="mt-3"
+        className="signup-btn mt-3"
         onClick={() => navigate('/restaurant/signup')}  // Navigate to Restaurant Signup
       >
         Restaurant Signup
       </Button>
       <Button
-        variant="secondary"
-        className="mt-3"
+        className="back-home-btn mt-3"
         onClick={() => navigate('/')}  // Navigate back to Home
       >
         Back to Home

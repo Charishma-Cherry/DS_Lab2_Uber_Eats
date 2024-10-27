@@ -104,7 +104,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         try:
             serializer = self.get_serializer(request.user.customer)
             logger.info(f"Profile fetched successfully for user: {request.user.username}")
-            return Response(serializer.data)
+            return Response({"customer": serializer.data, "email" : request.user.email})
         except Exception as e:
             logger.error(f"Error fetching profile for user {request.user.username}: {str(e)}")
             return Response({'error': 'Failed to fetch profile'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -144,13 +144,17 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         if not cart_items:
             return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
+        logger.info(request.data)
+
+        deliveryAddr = DeliveryAddress.objects.get(id=request.data.get('delivery_address_id'))
+
 
         total_price = sum(item.dish.price * item.quantity for item in cart_items)
         order = Order.objects.create(
             customer=customer,
             restaurant_id=restaurant_id,
             total_price=total_price,
-            delivery_address=request.data.get('delivery_address')
+            delivery_address=deliveryAddr
         )
 
         # Create OrderItem instances from CartItem
@@ -191,19 +195,19 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
     
    
-@action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='order_history')
-def order_history(self, request):
-        customer = request.user.customer
-        orders = Order.objects.filter(customer=customer).prefetch_related('orderitem_set')
-        
-        order_history_data = []
-        for order in orders:
-            order_data = OrderSerializer(order).data
-            order_items = OrderItem.objects.filter(order=order)
-            order_data['items'] = OrderItemSerializer(order_items, many=True).data
-            order_history_data.append(order_data)
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='order_history')
+    def order_history(self, request):
+            customer = request.user.customer
+            orders = Order.objects.filter(customer=customer).prefetch_related('orderitem_set')
+            
+            order_history_data = []
+            for order in orders:
+                order_data = OrderSerializer(order).data
+                order_items = OrderItem.objects.filter(order=order)
+                order_data['items'] = OrderItemSerializer(order_items, many=True).data
+                order_history_data.append(order_data)
 
-        return Response(order_history_data, status=status.HTTP_200_OK)
+            return Response(order_history_data, status=status.HTTP_200_OK)
 
 class FavoriteRestaurantViewSet(viewsets.ModelViewSet):
     queryset = FavoriteRestaurant.objects.all()

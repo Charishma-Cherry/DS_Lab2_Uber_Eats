@@ -3,6 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, IconButton } from '@mui/material';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';  // Import icons
 import { useNavigate } from 'react-router-dom';
+import { Image } from 'react-bootstrap';
+
 import './RestaurantCard.css'; // Import the CSS file
 
 const RestaurantCard = ({ restaurant, isFavorite, toggleFavorite }) => {
@@ -14,12 +16,15 @@ const RestaurantCard = ({ restaurant, isFavorite, toggleFavorite }) => {
 
   return (
     <Card className="restaurant-card">
-      <CardMedia
-        component="img"
-        height="140"
-        image={restaurant.image || 'https://via.placeholder.com/140x100'}
-        alt={restaurant.name}
-      />
+
+      
+       <CardMedia
+         component="img"
+         className = "dish-image"
+         image={restaurant.image || 'https://modernrestaurantmanagement.com/assets/media/2021/03/Getty_629200476-1200x655.jpg'}
+         alt={restaurant.name}
+       />
+     
       <CardContent>
         <Typography gutterBottom variant="h5" component="div" className="restaurant-name">
           {restaurant.name}
