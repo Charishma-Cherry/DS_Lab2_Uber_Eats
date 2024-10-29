@@ -32,7 +32,7 @@ class Dish(models.Model):
         ('Appetizer', 'Appetizer'),
         ('Salad', 'Salad'),
         ('Main Course', 'Main Course'),
-        ('Desert', 'Desert'),
+        ('Dessert', 'Dessert'),
         ('Beverage', 'Beverage'),
     ]
     category = models.CharField(max_length=20, choices=categories, default='')  # Category of the dish
