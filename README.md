@@ -59,17 +59,17 @@ This project is a clone of the Uber Eats application, designed to allow users to
 1. **Clone the repository**:
    git clone https://github.com/username/uber-eats-project.git
 2. **Backend Setup (Django):**
-   cd uber_eats_backend
-   python3 -m venv .venv //new virtual environment
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   python3 manage.py makemigrations
-   python3 manage.py migrate
-   python3 manage.py runserver
+   1. cd uber_eats_backend
+   2. python3 -m venv .venv //new virtual environment
+   3. source .venv/bin/activate
+   4. pip install -r requirements.txt
+   5. python3 manage.py makemigrations
+   6. python3 manage.py migrate
+   7. python3 manage.py runserver
 3. **Frontend Setup (React):**
-   cd uber-eats-frontend
-   npm install
-   npm start
+   1. cd uber-eats-frontend
+   2. npm install
+   3. npm start
 
 ### Configuration ( for deployment)
 1. Environment Variables:
