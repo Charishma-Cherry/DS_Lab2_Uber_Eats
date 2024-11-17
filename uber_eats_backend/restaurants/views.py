@@ -7,8 +7,8 @@ from .models import Restaurant, Dish
 from .serializers import RestaurantSerializer, DishSerializer, UserSerializer
 from django.http import HttpResponse
 from django.shortcuts import render
-from customers.models import Order
-from customers.serializers import OrderSerializer
+from order.models import Order
+from order.serializers import OrderSerializer
 import logging
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny  # Ensure this is included
@@ -68,8 +68,7 @@ class RestaurantViewSet(viewsets.ModelViewSet):
     def getOrders(self, request, pk=None):
         try:
             logger.info(pk)
-            orders = Order.objects.filter(restaurant=pk)
-
+            orders = Order.objects.filter(restaurant=pk).select_related('customer').select_related('delivery_address')
             serializer = OrderSerializer(orders, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Restaurant.DoesNotExist:
