@@ -1,8 +1,10 @@
 # Importing necessary modules from Django REST Framework
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Customer, Order, FavoriteRestaurant, CartItem, DeliveryAddress, OrderItem
+from .models import Customer, FavoriteRestaurant, CartItem, DeliveryAddress
+from order.models import Order, OrderItem
 from restaurants.serializers import RestaurantSerializer, DishSerializer
+from order.serializers import OrderItemSerializer , OrderSerializer
 from .models import Restaurant, Dish
 
 # Serializer for the User model
@@ -57,25 +59,6 @@ class DeliveryAddressSerializer(serializers.ModelSerializer):
         fields = ['id', 'address_line1', 'city', 'state', 'postal_code', 'country', 'is_default']
         read_only_fields = ['id']  # ID is read-only
 
-# Serializer for the OrderItem model
-class OrderItemSerializer(serializers.ModelSerializer):
-    dish = DishSerializer(read_only=True)  # Nested read-only dish serializer
-
-    class Meta:
-        model = OrderItem
-        fields = ['id', 'dish', 'quantity']  # Fields to include in the serialized representation
-
-# Serializer for the Order model
-class OrderSerializer(serializers.ModelSerializer):
-    delivery_address = DeliveryAddressSerializer(read_only=True)  # Nested read-only delivery address serializer
-    total_price = serializers.DecimalField(max_digits=10, decimal_places=2)  # Total price field
-    customer = CustomerSerializer(read_only=True)  # Nested read-only customer serializer
-    restaurant = RestaurantSerializer(read_only=True)  # Nested read-only restaurant serializer
-    items = OrderItemSerializer(many=True, read_only=True)  # Nested read-only order items
-
-    class Meta:
-        model = Order
-        fields = '__all__'  # Include all fields from the Order model
 
 # Serializer for the CartItem model
 class CartItemSerializer(serializers.ModelSerializer):

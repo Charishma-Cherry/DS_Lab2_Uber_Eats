@@ -2,13 +2,13 @@
 from django.contrib import admin
 
 # Importing models to be registered in the Django admin site
-from .models import Customer, Order, FavoriteRestaurant, CartItem
+from .models import Customer, FavoriteRestaurant, CartItem
 
 # Registering the Customer model with the admin site
 admin.site.register(Customer)
 
-# Registering the Order model with the admin site
-admin.site.register(Order)
+# # Registering the Order model with the admin site
+# admin.site.register(Order)
 
 # Registering the FavoriteRestaurant model with the admin site
 admin.site.register(FavoriteRestaurant)
