@@ -189,7 +189,7 @@ const fetchRestaurantNames = async (restaurantIds) => {
           {dishes.map(dish => (
             <Col key={dish.id} md={4} className="mb-4">
               <Card className="dish-card" >
-                {dish.image && 
+                {dish.image &&
                 <Image className = "dish-image" src={"http://localhost:8000" + dish.image} alt={dish.name} fluid />
                 } 
                 {!dish.image && 
