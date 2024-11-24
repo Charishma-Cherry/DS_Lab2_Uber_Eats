@@ -4,10 +4,20 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from order.models import Order,OrderItem
 from customers.models import Customer,CartItem,DeliveryAddress
+from .producer import send_order_message
 from .serializers import OrderSerializer,OrderItemSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.permissions import AllowAny
+from django.views.decorators.csrf import csrf_exempt
+# from kafka import KafkaProducer
+# import json
+# from django.conf import settings
 
+# # Initialize Kafka producer
+# producer = KafkaProducer(
+#     bootstrap_servers=settings.KAFKA_BROKER_URL,
+#     value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+# )
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -18,6 +28,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     #permission_classes = [IsAuthenticated]
     permission_classes = [AllowAny] 
 
+    @csrf_exempt
     def get_queryset(self): 
         user = self.request.user
         if hasattr(user, 'customer'):
@@ -26,6 +37,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Order.objects.filter(restaurant=user.restaurant)
         return Order.objects.none()
 
+    @csrf_exempt
     @action(detail=False, methods=['post'], url_path='place_order')
     def place_order(self, request):
         customer = Customer.objects.get(user=request.user)
@@ -61,9 +73,23 @@ class OrderViewSet(viewsets.ModelViewSet):
         # Link Cart Items to Order and update state
         cart_items.update(order=order, state='placed')
 
+        
+        #  # Publish to Kafka
+        message = {
+             "order_id": order.id,
+             "customer_id": customer.id,
+             "restaurant_id": restaurant_id,
+             "total_price": total_price,
+             "items": [{"dish": item.dish.name, "quantity": item.quantity} for item in order_items],
+            }
+        # producer.send(settings.ORDER_TOPIC, value=message)
+        # producer.flush()
+        send_order_message(message)
+
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @csrf_exempt
     @action(detail=False, methods=['get'])
     def getOrderDetail(self, request):
         order_id = request.GET.get('orderId')
@@ -73,6 +99,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
     
+    @csrf_exempt
     @action(detail=False, methods=['post'])
     def updateOrderStatus(self, request):
         order_id = request.data.get('orderId')
@@ -84,7 +111,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Response({'status': 'Order status updated'})
         return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
     
-   
+    @csrf_exempt
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='order_history')
     def order_history(self, request):
             customer = request.user.customer

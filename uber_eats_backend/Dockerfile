@@ -7,6 +7,8 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     libpq-dev \
+    pkg-config \
+    libmariadb-dev \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
@@ -21,7 +23,6 @@ COPY . /app/
 ENV PYTHONUNBUFFERED 1
 
 # Expose port for the Django app
-EXPOSE 8000
-
+EXPOSE 8001
 # Command to run the Django app
-CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && gunicorn uber_eats_backend.wsgi:application --bind 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && gunicorn uber_eats_backend.wsgi:application --bind 0.0.0.0:8001"]

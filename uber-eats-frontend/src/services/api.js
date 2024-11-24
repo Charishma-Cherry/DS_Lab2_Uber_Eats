@@ -3,6 +3,8 @@ import axios from 'axios';
 
 // Define the base URL for the API, using an environment variable or defaulting to localhost
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/';
+// || 'http://nginx-service.default.svc.cluster.local:80/api';
+
 
 // Create an axios instance with the base URL
 const api = axios.create({
