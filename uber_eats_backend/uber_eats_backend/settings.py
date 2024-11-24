@@ -174,8 +174,6 @@ CORS_ALLOW_CREDENTIALS = True
 #     "http://127.0.0.1:3000",
 # ]  
 
-KAFKA_BROKER_URL = "redpanda:9092"
-
 
 LOGGING = {
     'version': 1,

@@ -50,15 +50,4 @@ spec:
       port: 8003  # Externally exposed port
       # targetPort: 8000  # Internal port of the restaurants container
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: redpanda
-spec:
-  ports:
-    - port: 9092
-      targetPort: 9092
-  selector:
-    app: redpanda
----
 

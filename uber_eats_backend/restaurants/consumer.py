@@ -1,30 +1,22 @@
-from kafka import KafkaConsumer
-import time
+from aiokafka import AIOKafkaConsumer
+import asyncio
 
-def create_consumer():
-    # for _ in range(10):
+async def consume():
+    consumer = AIOKafkaConsumer(
+        'orders', None,
+        bootstrap_servers='redpanda-service:9092',
+        group_id="restaurants_group"
+    )
+    
+    # Start the consumer
+    await consumer.start()
+    
     try:
-        return KafkaConsumer(
-            'orders',
-            bootstrap_servers=['redpanda:9092'],
-            group_id='restaurants_group',
-            auto_offset_reset='earliest',
-        )
-    except Exception as e:
-        print(f"Waiting for Kafka... {e}")
-        # time.sleep(600)
-    # raise RuntimeError("Kafka is not available after 10 retries")
+        # Consume messages
+        async for msg in consumer:
+            print("Consumed:", msg.topic, msg.partition, msg.offset, msg.key, msg.value, msg.timestamp)
+    finally:
+        # Stop the consumer
+        await consumer.stop()
 
-def process_messages():
-    try:
-        consumer = create_consumer()
-        for message in consumer:
-        # Safely decode message value
-            value = message.value
-            if value:
-                decoded_value = value.decode('utf-8')
-                print(f"Received: {decoded_value}")
-            else:
-                print("Received an empty message")
-    except Exception as e:
-        print(f"Error processing messages: {e}")
+asyncio.run(consume())
