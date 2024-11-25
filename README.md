@@ -2,17 +2,17 @@
 
 A web application that allows users to browse restaurants, view menus, and place orders, with additional functionality for restaurant owners to manage orders. Built using Django for the backend and React for the frontend.
 
+This lab2 is continuation to lab1 project. The current repository covers the concept of dockers , kubernetes and kafka messaging services based on the lab1 project already developed.
+
 ## Table of Contents
 - [Project Overview](#project-overview)
 - [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Installation](#installation)
-- [Configuration](#configuration)
+- [New Tech Stack](#new-tech-stack)
+- [Steps](#steps)
 - [Usage](#usage)
-- [Performance Considerations](#performance-considerations)
 - [Screenshots](#screenshots)
 - [Git Management](#git-management)
-
+  
 ## Project Overview
 
 This project is a clone of the Uber Eats application, designed to allow users to explore restaurants and place orders, while restaurant owners manage menu items and orders ( with order updates ) . The project includes two primary user flows:
@@ -40,50 +40,42 @@ This project is a clone of the Uber Eats application, designed to allow users to
 - View the list of added dishes.
 - Edit Dishes after adding the dishes.
 
-## Tech Stack
-- **Backend**: Django (Python)
-- **Frontend**: React (JavaScript)
-- **Database**: SQLite 
-- **Deployment**: AWS EC2
-
-## Installation
+## New Tech Stack
+The current repository focused on dockerization , kubernetes setup and kafka messaging services between order and restaurants.
 
 ### Prerequisites : 
-- Python 
-- Node.js 
-- AWS CLI
-- Check requirements.txt file for backend and package.json for frontend
+- Check requirements.txt file 
 
 ### Steps
 
-1. **Clone the repository**:
-   git clone https://github.com/username/uber-eats-project.git
-2. **Backend Setup (Django):**
-   1. cd uber_eats_backend
-   2. python3 -m venv .venv //new virtual environment
-   3. source .venv/bin/activate
-   4. pip install -r requirements.txt
-   5. python3 manage.py makemigrations
-   6. python3 manage.py migrate
-   7. python3 manage.py runserver
-3. **Frontend Setup (React):**
-   1. cd uber-eats-frontend
-   2. npm install
-   3. npm start
-
-### Configuration ( for deployment)
-1. Environment Variables:
-   Define environment variables for database connections, secret keys, and API configurations in a .env file in both backend and frontend folders.
-2. AWS Configuration:
-   Set up AWS EC2 instance and configure environment variables for remote access and deployment.
+1. Build frontend:
+   cd uber-eats-frontend
+   docker buildx build --no-cache -t <docker image with tag > .
+Ex:
+   docker buildx build --no-cache -t charishmatamarana/uber_eats_backend-frontend:latest .
+2. Build backend:
+   cd uber_eats_backend
+   docker buildx build --file restaurants.Dockerfile --no-cache -t charishmatamarana/uber_eats_backend-restaurants:latest .
+   docker buildx build --file order.Dockerfile --no-cache -t charishmatamarana/uber_eats_backend-order:latest .
+   docker buildx build --file customers.Dockerfile --no-cache -t charishmatamarana/uber_eats_backend-customers:latest .
+3. After building all images, do a push in docker app.
+4. For config of nginx : kubectl create configmap nginx-config --from-file=nginx.conf
+5. Now run for all yaml files: (run mysql, zookeper, kafka before backend and make sure those are in running status before starting backend)
+   kubectl apply -f <yaml file of deployment>
+   kubectl apply -f <yaml file of service>
+6. After all pods are in running state :
+   kubectl port-forward svc/frontend-service 8080:80 &
+   kubectl port-forward service/backend-service 8000:80 &
+7. To get kafka logs of consumers for order and order_update topic :
+   kubectl exec -it <backendpodname> -c restaurants -- bash   
+   root@backend-deployment-f9f6b868b-5znm8:/app# tail -f /var/log/kafka_consumer.log 
 
 ### Usage
 
-1. Local Development: Access the frontend at http://localhost:3000 and the backend at http://localhost:8000.
-2. Admin Access: Use Django Admin for direct data management, e.g., adding new restaurants or dishes.
+Local Development: Access the frontend at http://localhost:8080 to run the application
 
 ### Screenshots
-For Screenshots check out the Results Screenshots file.
+For Screenshots check the Screenshots file.
 
 ### Git Management
 1. Fork the repository.
