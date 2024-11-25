@@ -73,7 +73,7 @@ class OrderViewSet(viewsets.ModelViewSet):
              "total_price": total_price,
              "items": [{"dish": item.dish.name, "quantity": item.quantity} for item in order_items],
             }
-        send_order_message(message)
+        send_order_message("orders", message)
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -97,6 +97,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         if status in dict(Order.STATUS_CHOICES):
             order.status = status
             order.save()
+            send_order_message("order_updates", {'order_id': order_id, 'status': status})
             return Response({'status': 'Order status updated'})
         return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
     
