@@ -134,7 +134,7 @@ function UserProfile() {
         
         <Row className="mb-3">
           <Col md={4} className="profile-picture">
-            <Image src={profile.profile_picture.replace("localhost", "localhost:8000") || 'default-avatar.png'} roundedCircle fluid />
+            <Image src={profile?.profile_picture?.replace("localhost", "localhost:8000") || 'default-avatar.png'} roundedCircle fluid />
             <Form.Group controlId="formProfilePicture" className="mt-2">
               <Form.Label>Update Profile Picture</Form.Label>
               <Form.Control type="file" onChange={handleProfilePictureChange} accept="image/*" />

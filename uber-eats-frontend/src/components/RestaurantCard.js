@@ -19,7 +19,7 @@ const RestaurantCard = ({ restaurant, isFavorite, toggleFavorite }) => {
       <CardMedia
         component="img" // Media component for displaying the restaurant image
         className="dish-image" // CSS class for image styling
-        image={restaurant.image.replace("localhost", "localhost:8000") || 'https://modernrestaurantmanagement.com/assets/media/2021/03/Getty_629200476-1200x655.jpg'} // Fallback image if none is provided
+        image={restaurant?.image?.replace("localhost", "localhost:8000") || 'https://modernrestaurantmanagement.com/assets/media/2021/03/Getty_629200476-1200x655.jpg'} // Fallback image if none is provided
         alt={restaurant.name} // Alternative text for accessibility
       />
       
