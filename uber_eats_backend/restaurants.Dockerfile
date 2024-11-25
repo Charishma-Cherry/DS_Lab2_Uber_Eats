@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire project into the container
 COPY . /app/
 
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY supervisord_restaurants.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Set environment variables
 ENV PYTHONUNBUFFERED 1
