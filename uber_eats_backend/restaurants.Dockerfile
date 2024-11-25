@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     pkg-config \
     libmariadb-dev \
+    librdkafka-dev \
+    supervisor \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
@@ -19,10 +21,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire project into the container
 COPY . /app/
 
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
 # Set environment variables
 ENV PYTHONUNBUFFERED 1
 
 # Expose port for the Django app
-EXPOSE 8001
+EXPOSE 8003
 # Command to run the Django app
-CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && gunicorn uber_eats_backend.wsgi:application --bind 0.0.0.0:8001"]
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

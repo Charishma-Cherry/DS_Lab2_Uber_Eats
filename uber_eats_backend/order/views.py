@@ -9,15 +9,6 @@ from .serializers import OrderSerializer,OrderItemSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
-# from kafka import KafkaProducer
-# import json
-# from django.conf import settings
-
-# # Initialize Kafka producer
-# producer = KafkaProducer(
-#     bootstrap_servers=settings.KAFKA_BROKER_URL,
-#     value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-# )
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -82,8 +73,6 @@ class OrderViewSet(viewsets.ModelViewSet):
              "total_price": total_price,
              "items": [{"dish": item.dish.name, "quantity": item.quantity} for item in order_items],
             }
-        # producer.send(settings.ORDER_TOPIC, value=message)
-        # producer.flush()
         send_order_message(message)
 
         serializer = OrderSerializer(order)
